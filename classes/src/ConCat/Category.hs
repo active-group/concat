@@ -2664,3 +2664,19 @@ f `crossSecondFirst` g = second g . first f
 {-# INLINE crossSecondFirst #-}
 
 #endif
+
+
+class MatrixMap m where
+  type Dim1 m :: Type -> Type
+  type Dim2 m :: Type -> Type
+  linear :: Dim1 m s -> m s ->  Dim2 m s
+
+class (MatrixMap m, Category k) => MatrixMapCat k m where
+  linearC :: Ok k s => Dim1 m s -> (m s `k` Dim2 m s)
+
+instance MatrixMap m where
+  linear = error "linear @m"
+
+instance MatrixMapCat (->) m where
+  linearC = error "linearC @(->)"
+  {-# NOINLINE linearC #-}

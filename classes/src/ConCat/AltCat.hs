@@ -58,6 +58,7 @@ import Data.Void
 import Data.Pointed (Pointed)
 import qualified Data.Pointed as Pointed
 import qualified ConCat.Pointed as ConCatPointed
+import qualified ConCat.MatrixMap as MatrixMap
 import qualified ConCat.Zip as ConCatZip
 import qualified ConCat.MinMax as ConCatMinMax
 import Data.Key (Zip(..))
@@ -117,6 +118,10 @@ import ConCat.Category
   , fmap', liftA2' 
   -- 
   -- , crossSecondFirst
+  , MatrixMap (linear)
+  , MatrixMapCat 
+  , Dim1
+  , Dim2
   )
 
 -- | Dummy identity function to trigger rewriting of non-inlining operations to
@@ -866,6 +871,7 @@ Op0(minimumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(maximumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
 Op0(maximumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
+Op1(linearC, (Ok k s, MatrixMapCat k m) => Dim1 m s -> (m s `k` Dim2 m s))
   
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
 -- Op0(sumC  , (SumCat k h a)              => h a `k` a)
@@ -878,6 +884,8 @@ Catify(zip  , curry zipC)
 Catify(Pointed.point, pointC)
 Catify(ConCatPointed.point, pointC)
 Catify(sumA , sumAC)
+Catify(MatrixMap.linear, linearC)
+-- {-# RULES "catify" [~0] linear = linearC #-}
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)
