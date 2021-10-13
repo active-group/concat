@@ -122,6 +122,9 @@ import ConCat.Category
   , MatrixMapCat 
   , Dim1
   , Dim2
+  , Bump (bump)
+  , BumpCat
+  , BumpRep
   )
 
 -- | Dummy identity function to trigger rewriting of non-inlining operations to
@@ -871,8 +874,9 @@ Op0(minimumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(maximumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
 Op0(maximumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
-Op1(linearC, (Ok k s, MatrixMapCat k m) => Dim1 m s -> (m s `k` Dim2 m s))
-  
+Op1(linearC, (Ok k s, MatrixMapCat k m) => m s -> Dim1 m s `k` Dim2 m s)
+Op0(bumpC, (Ok k s, BumpCat k b) => b s `k` BumpRep b s)                                                       
+
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
 -- Op0(sumC  , (SumCat k h a)              => h a `k` a)
 
@@ -885,7 +889,7 @@ Catify(Pointed.point, pointC)
 Catify(ConCatPointed.point, pointC)
 Catify(sumA , sumAC)
 Catify(MatrixMap.linear, linearC)
--- {-# RULES "catify" [~0] linear = linearC #-}
+Catify(MatrixMap.bump, bumpC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)

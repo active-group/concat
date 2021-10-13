@@ -2669,10 +2669,10 @@ f `crossSecondFirst` g = second g . first f
 class MatrixMap m where
   type Dim1 m :: Type -> Type
   type Dim2 m :: Type -> Type
-  linear :: Dim1 m s -> m s ->  Dim2 m s
+  linear :: m s -> Dim1 m s -> Dim2 m s
 
 class (MatrixMap m, Category k) => MatrixMapCat k m where
-  linearC :: Ok k s => Dim1 m s -> (m s `k` Dim2 m s)
+  linearC :: Ok k s => m s -> Dim1 m s `k` Dim2 m s
 
 instance MatrixMap m where
   linear = error "linear @m"
@@ -2680,3 +2680,19 @@ instance MatrixMap m where
 instance MatrixMapCat (->) m where
   linearC = error "linearC @(->)"
   {-# NOINLINE linearC #-}
+
+
+class Bump b where
+  type BumpRep b :: Type -> Type
+  bump :: Num s => b s -> BumpRep b s
+
+class (Category k, Bump b) => BumpCat k b where
+  bumpC :: Ok k s => b s `k` BumpRep b s
+  
+
+instance Bump b where
+  bump = error "bump @b"
+
+instance BumpCat (->) b where
+  bumpC = error "bumpC @(->)"
+  {-# NOINLINE bumpC #-}
