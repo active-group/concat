@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeOperators #-}
 
-module ConCat.MatrixMap (linearC, linear, bump, bumpC) where
+module ConCat.MatrixMap (linearC, linear, bump, bumpC, tanhC, fmapC, maxC) where
 
 import qualified ConCat.Category as C
 
@@ -19,3 +19,15 @@ bump = C.bump
 bumpC :: (C.BumpCat k b, C.Ok k s) => b s `k` C.BumpRep b s
 bumpC = C.bumpC
 {-# INLINE [0] bumpC #-}
+
+tanhC :: (C.FloatingCat k b, C.Ok k b) => b `k` b
+tanhC = C.tanhC
+{-# INLINE [0] tanhC #-}
+
+fmapC :: (C.FunctorCat k h, C.Ok2 k a b) => a `k` b -> h a `k` h b
+fmapC = C.fmapC
+{-# INLINE [0] fmapC #-}
+
+maxC :: (C.MinMaxCat k a, C.Ok k a) => (a, a) `k` a
+maxC = C.maxC
+{-# INLINE [0] maxC #-}

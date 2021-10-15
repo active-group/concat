@@ -1682,9 +1682,19 @@ instance (FractionalCat k a, FractionalCat k' a) => FractionalCat (k :**: k') a 
   PINLINER(divideC)
 
 class Ok k a => FloatingCat k a where
-  expC, logC, cosC, sinC, sqrtC :: a `k` a
+  expC, logC, cosC, sinC, sqrtC, tanhC :: a `k` a
+  -- default tanhC :: (Ok k a, FractionalCat k a, NumCat k a, MProductCat k) => a `k` a
+  -- tanhC = divideC . (`subC` 1 . expC . mulC 2) *** (addC 1 . expC . mulC 2) . dup
+  {-# MINIMAL expC, logC, cosC, sinC, sqrtC #-}
   -- powC :: (a :* a) `k` a
-
+{-
+forkF fs = crossF fs . replF <+ okIxProd @k @h @a <+ okIxProd @k @h @b
+  default replF :: forall a . (Pointed h, Ok k a) => a `k` h a
+  replF     = forkF (point id)
+  {-# INLINE forkF #-}
+  {-# INLINE replF #-}
+  {-# MINIMAL exF, (forkF | replF) #-}
+-}
 -- ln :: Floating a => a -> a
 -- ln = logBase (exp 1)
 
@@ -1694,12 +1704,14 @@ instance Floating a => FloatingCat (->) a where
   cosC = IC.inline cos
   sinC = IC.inline sin
   sqrtC = IC.inline sqrt
+  tanhC = IC.inline tanh
   -- powC = IC.inline (**)
   {-# OPINLINE expC #-}
   {-# OPINLINE logC #-}
   {-# OPINLINE cosC #-}
   {-# OPINLINE sinC #-}
   {-# OPINLINE sqrtC #-}
+  {-# OPINLINE tanhC #-}
 
 #ifdef KleisliInstances
 instance (Monad m, Floating a) => FloatingCat (Kleisli m) a where
