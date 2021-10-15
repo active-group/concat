@@ -1,45 +1,46 @@
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
-
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-} -- TEMP
+-- TEMP
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 -- | Automatic differentiation
-
 module ConCat.ADFun where
 
-import Prelude hiding (id,(.),curry,uncurry,const,zip,unzip)
-import qualified Prelude as P
 -- import Debug.Trace (trace)
-import GHC.Generics (Par1)
 
-import Control.Newtype.Generics (Newtype(..))
-import Data.Pointed (Pointed)
-import Data.Key (Zip(..))
-import Data.Constraint hiding ((&&&),(***),(:=>))
-import Data.Distributive (Distributive(..))
-import Data.Functor.Rep (Representable(..))
+-- hiding (linear)
 
-import ConCat.Misc ((:*),R,Yes1,oops,unzip,type (&+&),sqr,result)
-import ConCat.Rep (repr)
-import ConCat.Free.VectorSpace (HasV(..),inV,IsScalar)
-import ConCat.Free.LinearRow -- hiding (linear)
-import ConCat.AltCat
-import ConCat.GAD -- hiding (linear)
+-- hiding (linear)
 import ConCat.AdditiveFun
+import ConCat.AltCat
 -- The following imports allows the instances to type-check. Why?
-import qualified ConCat.Category  as C
+import qualified ConCat.Category as C
+import ConCat.Free.LinearRow
+import ConCat.Free.VectorSpace (HasV (..), IsScalar, inV)
+import ConCat.GAD
+import ConCat.Misc (R, Yes1, oops, result, sqr, unzip, (:*), type (&+&))
+import ConCat.Rep (repr)
+import Control.Newtype.Generics (Newtype (..))
+import Data.Constraint hiding ((&&&), (***), (:=>))
+import Data.Distributive (Distributive (..))
+import Data.Functor.Rep (Representable (..))
+import Data.Key (Zip (..))
+import Data.Pointed (Pointed)
+import GHC.Generics (Par1)
+import Prelude hiding (const, curry, id, uncurry, unzip, zip, (.))
+import qualified Prelude as P
 
 -- Differentiable functions
 type D = GD (-+>)
@@ -81,32 +82,32 @@ curryD (D (unfork -> (f,f'))) =
     Differentiation interface
 --------------------------------------------------------------------}
 
-andDerF :: forall a b . (a -> b) -> (a -> b :* (a -> b))
+andDerF :: forall a b. (a -> b) -> (a -> b :* (a -> b))
 andDerF f = unMkD (toCcc @D f)
 {-# INLINE andDerF #-}
 
-andDerF' :: forall a b . (a -> b) -> (a -> b :* (a -> b))
+andDerF' :: forall a b. (a -> b) -> (a -> b :* (a -> b))
 andDerF' f = unMkD (toCcc' @D f)
 {-# INLINE andDerF' #-}
 
 -- Type specialization of deriv
-derF :: forall a b . (a -> b) -> (a -> (a -> b))
+derF :: forall a b. (a -> b) -> (a -> (a -> b))
 derF = (result P.. result) snd andDerF
 -- derF f = \ a -> snd (andDerF f a)
 {-# INLINE derF #-}
 
 -- AD with derivative-as-function, then converted to linear map
 andDerFL :: forall s a b. HasLin s a b => (a -> b) -> (a -> b :* L s a b)
-andDerFL f = second linear . andDerF f
+andDerFL f = second ConCat.Free.LinearRow.linear . andDerF f
 {-# INLINE andDerFL #-}
 
 -- AD with derivative-as-function, then converted to linear map
 derFL :: forall s a b. HasLin s a b => (a -> b) -> (a -> L s a b)
-derFL f = linear . derF f
+derFL f = ConCat.Free.LinearRow.linear . derF f
 {-# INLINE derFL #-}
 
 dualV :: forall s a. (HasLin s a s, IsScalar s) => (a -> s) -> a
-dualV h = unV (unpack (unpack (linear @s h)))
+dualV h = unV (unpack (unpack (ConCat.Free.LinearRow.linear @s h)))
 {-# INLINE dualV #-}
 
 --                                h    :: a -> s
@@ -195,4 +196,3 @@ gradFR f = dualVR . derF f
 {-# INLINE gradFR #-}
 
 #endif
-
