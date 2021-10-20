@@ -294,3 +294,11 @@ addFun f = repr (toCcc @(-+>) f)
 addFun' :: (a -> b) -> (a -> b)
 addFun' f = repr (toCcc' @(-+>) f)
 {-# INLINE addFun' #-}
+
+instance MatrixMap m => MatrixMapCat (-+>) m where
+  linearC mat = abst (linearC mat)
+  {-# OPINLINE linearC #-}
+
+instance Transpose m => TransposeCat (-+>) m where
+  transposeC = abst transposeC
+  {-# OPINLINE transposeC #-}

@@ -2693,6 +2693,25 @@ instance MatrixMapCat (->) m where
   linearC = error "linearC @(->)"
   {-# NOINLINE linearC #-}
 
+class Transpose m where
+  type Transposed m :: Type -> Type
+  transpose :: m s -> Transposed m s
+
+class (Transpose m, Category k) => TransposeCat k m where
+  transposeC :: Ok k s => m s `k` Transposed m s
+
+instance Transpose m where
+  transpose = error "transpose @m"
+  {-# NOINLINE transpose #-}
+
+instance TransposeCat (->) m where
+  transposeC = error "transposeC @(->)"
+  {-# NOINLINE transposeC #-}
+
+-- instance {-# INCOHERENT #-} (MatrixMap m, Transpose m, a ~ Transposed m) => MatrixMap a where
+--   type Dim1 (Transposed m) = Dim2 m
+--   type Dim2 (Transposed m) = Dim1 m
+--   linear = linear
 
 class Bump b where
   type BumpRep b :: Type -> Type

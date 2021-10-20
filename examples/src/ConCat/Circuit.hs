@@ -180,7 +180,7 @@ import ConCat.Misc ((:*),(:+),Unop,Binop,Yes1,typeR,transpose)
 import ConCat.Rep
 import ConCat.Additive (Additive(..),Add)
 import qualified ConCat.Category
-import ConCat.AltCat  -- for AbsTy
+import ConCat.AltCat hiding (transpose) -- for AbsTy
 -- import ConCat.AltCat (Uncurriable(..),funIf,repIf,unitIf,prodIf,Finite)
 
 {--------------------------------------------------------------------

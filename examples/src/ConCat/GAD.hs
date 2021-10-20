@@ -424,3 +424,7 @@ andDeriv h = unD (toCcc h)
 deriv :: forall k a b . (a -> b) -> (a -> (a `k` b))
 deriv h = snd P.. andDeriv h
 {-# INLINE deriv #-}
+
+instance MatrixMapCat k m => MatrixMapCat (GD k) m where
+  linearC m = linearD (linearC m) (linearC m)
+  {-# NOINLINE [0] linearC #-}

@@ -263,3 +263,14 @@ instance (Additive a, Additive1 h, MinMaxFunctorCat (->) h a, PointedCat k h a) 
 toDual :: forall k a b. (a -> b) -> (b `k` a)
 toDual f = unDual (toCcc f)
 {-# INLINE toDual #-}
+
+instance 
+  ( MatrixMapCat k m,
+    TransposeCat k m,
+    MatrixMapCat k (Transposed m), 
+    Dim1 (Transposed m) ~ Dim2 m, 
+    Dim2 (Transposed m) ~ Dim1 m
+  ) => 
+  MatrixMapCat (Dual k) m where
+    linearC = Dual . linearC . transposeC
+    {-# NOINLINE [0] linearC #-}
