@@ -128,7 +128,7 @@ import ConCat.Matrix
   , Dim2
   , Transpose (transpose)
   , Transposed
-  , Bump (bump)
+  , Bump (bump, unbump)
   , BumpRep
   )
 
@@ -882,6 +882,7 @@ Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :* 
 Op0(maximumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
 Op1(linearC, (Ok k s, MatrixMapCat k m, Additive s, Num s) => m s -> Dim1 m s `k` Dim2 m s)
 Op0(bumpC, (Ok k s, BumpCat k b, Num s) => b s `k` BumpRep b s)
+Op0(unbumpC, (Ok k s, BumpCat k b, Num s) => BumpRep b s `k` b s)
 Op0(transposeC, (Ok k s, TransposeCat k m) => m s `k` Transposed m s)
 
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
@@ -898,6 +899,7 @@ Catify(sumA , sumAC)
 Catify(linear, linearC)
 Catify(MatrixMap.linear, linearC)
 Catify(bump, bumpC)
+Catify(unbump, unbumpC)
 Catify(transpose, transposeC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)

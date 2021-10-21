@@ -20,23 +20,14 @@ class MatrixMap m where
   type Dim2 m :: Type -> Type
   linear :: (Additive s, Num s) => m s -> Dim1 m s -> Dim2 m s
 
--- instance {-# OVERLAPPABLE #-} MatrixMap m where
---   linear = error "linear @m"
-
 class Transpose m where
   type Transposed m :: Type -> Type
   transpose :: m s -> Transposed m s
 
--- instance {-# OVERLAPPABLE #-} Transpose m where
---   transpose = error "transpose @m"
---   {-# NOINLINE transpose #-}
-
 class Bump b where
   type BumpRep b :: Type -> Type
   bump :: Num s => b s -> BumpRep b s
-
--- instance Bump b where
---   bump = error "bump @b"
+  unbump :: Num s => BumpRep b s -> b s
 
 instance (Foldable f, Zip.Zip f, Functor g) => MatrixMap (g :.: f) where
   type Dim1 (g :.: f) = f
@@ -60,7 +51,9 @@ instance {-# OVERLAPPING #-} Transpose ([] :.: []) where
 instance Bump (Vector.Vector n) where
   type BumpRep (Vector.Vector n) = Vector.Vector (n + 1)
   bump = (`Vector.snoc` 1)
+  unbump = Vector.init
 
 instance Bump [] where
   type BumpRep [] = []
   bump = (`snoc` 1)
+  unbump = init
