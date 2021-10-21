@@ -102,6 +102,7 @@ library
                        ConCat.LC
                        ConCat.Local
                        ConCat.Deep
+                       ConCat.DeepMatrix
                        ConCat.TArr
                        ConCat.KnownNatOps
                        ConCat.Isomorphism
