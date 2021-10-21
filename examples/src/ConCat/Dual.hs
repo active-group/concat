@@ -275,3 +275,9 @@ instance
   MatrixMapCat (Dual k) m where
     linearC = Dual . linearC . transposeC
     {-# NOINLINE linearC #-}
+
+instance BumpCat k v => BumpCat (Dual k) v where
+  bumpC = Dual unbumpC
+  unbumpC = Dual bumpC
+  {-# NOINLINE bumpC #-}
+  {-# NOINLINE unbumpC #-}

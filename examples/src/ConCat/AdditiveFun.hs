@@ -311,3 +311,9 @@ instance (Foldable f, Zip f, Functor g) => MatrixMapCat (-+>) (g :.: f) where
     (g :.: f) s -> f s -+> g s
   linearC m = AddFun (Matrix.linear m)
   {-# NOINLINE linearC #-}
+
+instance Matrix.Bump f => BumpCat (-+>) f where
+  bumpC = AddFun Matrix.bump
+  unbumpC = AddFun Matrix.unbump
+  {-# NOINLINE bumpC #-}
+  {-# NOINLINE unbumpC #-}

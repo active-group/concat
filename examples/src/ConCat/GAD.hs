@@ -428,3 +428,9 @@ deriv h = snd P.. andDeriv h
 instance MatrixMapCat k m => MatrixMapCat (GD k) m where
   linearC m = linearD (linearC m) (linearC m)
   {-# NOINLINE [0] linearC #-}
+
+instance BumpCat k m => BumpCat (GD k) m where
+  bumpC = linearD bumpC bumpC
+  unbumpC = linearD unbumpC unbumpC
+  {-# NOINLINE [0] bumpC #-}
+  {-# NOINLINE [0] unbumpC #-}
