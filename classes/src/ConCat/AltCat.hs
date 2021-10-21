@@ -83,6 +83,7 @@ import ConCat.Additive
 import qualified ConCat.Category as C
 import ConCat.Satisfy
 import ConCat.Known
+import qualified ConCat.MatrixMap as MatrixMap
 
 import ConCat.Category
   ( Category, Ok,Ok2,Ok3,Ok4,Ok5,Ok6, Ok', (<~), (~>), Show2(..)
@@ -895,6 +896,7 @@ Catify(Pointed.point, pointC)
 Catify(ConCatPointed.point, pointC)
 Catify(sumA , sumAC)
 Catify(linear, linearC)
+Catify(MatrixMap.linear, linearC)
 Catify(bump, bumpC)
 Catify(transpose, transposeC)
 
