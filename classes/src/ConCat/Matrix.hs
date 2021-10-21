@@ -1,0 +1,66 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+
+module ConCat.Matrix where
+
+import qualified Data.Vector.Sized as Vector
+import GHC.Generics ((:.:) (..))
+import Data.Distributive (Distributive (..))
+import Data.List.Extra (snoc)
+import Data.Kind (Type)
+import qualified ConCat.Zip as Zip
+import ConCat.Additive (Additive, sumA)
+import GHC.TypeLits
+
+class MatrixMap m where
+  type Dim1 m :: Type -> Type
+  type Dim2 m :: Type -> Type
+  linear :: (Additive s, Num s) => m s -> Dim1 m s -> Dim2 m s
+
+-- instance {-# OVERLAPPABLE #-} MatrixMap m where
+--   linear = error "linear @m"
+
+class Transpose m where
+  type Transposed m :: Type -> Type
+  transpose :: m s -> Transposed m s
+
+-- instance {-# OVERLAPPABLE #-} Transpose m where
+--   transpose = error "transpose @m"
+--   {-# NOINLINE transpose #-}
+
+class Bump b where
+  type BumpRep b :: Type -> Type
+  bump :: Num s => b s -> BumpRep b s
+
+-- instance Bump b where
+--   bump = error "bump @b"
+
+instance (Foldable f, Zip.Zip f, Functor g) => MatrixMap (g :.: f) where
+  type Dim1 (g :.: f) = f
+  type Dim2 (g :.: f) = g
+  linear (Comp1 ba) a = (<.> a) <$> ba
+
+(<.>) :: (Foldable a, Zip.Zip a, Additive s, Num s) => a s -> a s -> s
+xs <.> ys = sumA (Zip.zipWith (*) xs ys)
+
+instance (Distributive f, Functor g) => Transpose (g :.: f) where
+  type Transposed (g :.: f) = f :.: g
+  transpose = Comp1 . distribute . unComp1
+
+instance {-# OVERLAPPING #-} Transpose ([] :.: []) where
+  type Transposed ([] :.: []) = ([] :.: [])
+  transpose (Comp1 [])             = Comp1 []
+  transpose (Comp1 ([]   : xss))   = transpose (Comp1 xss)
+  transpose (Comp1 ((x:xs) : xss)) = 
+    Comp1 ((x : [h | (h:_) <- xss]) : unComp1 (transpose (Comp1 (xs : [ t | (_:t) <- xss]))))
+
+instance Bump (Vector.Vector n) where
+  type BumpRep (Vector.Vector n) = Vector.Vector (n + 1)
+  bump = (`Vector.snoc` 1)
+
+instance Bump [] where
+  type BumpRep [] = []
+  bump = (`snoc` 1)

@@ -29,15 +29,19 @@ module ConCat.AdditiveFun
 import Prelude hiding (id,(.),const,curry,uncurry,zipWith)
 
 import Data.Constraint (Dict(..),(:-)(..))
+import Data.Distributive (Distributive (..))
 import Data.Key (Zip)
 import Data.Pointed (Pointed)
 import Data.Functor.Rep (Representable(tabulate,index))
+import GHC.Generics ((:.:) (..))
 
 import ConCat.Orphans ()
 import qualified ConCat.Category as Category
 import ConCat.AltCat
 import ConCat.Rep
 import ConCat.Additive
+import qualified ConCat.Zip as Zip
+import qualified ConCat.Matrix as Matrix
 
 import qualified ConCat.Inline.ClassOp as IC
 
@@ -295,10 +299,15 @@ addFun' :: (a -> b) -> (a -> b)
 addFun' f = repr (toCcc' @(-+>) f)
 {-# INLINE addFun' #-}
 
-instance MatrixMap m => MatrixMapCat (-+>) m where
-  linearC mat = abst (linearC mat)
-  {-# OPINLINE linearC #-}
-
-instance Transpose m => TransposeCat (-+>) m where
-  transposeC = abst transposeC
-  {-# OPINLINE transposeC #-}
+instance Matrix.Transpose (g :.: f) => TransposeCat (-+>) (g :.: f) where
+  -- transposeC :: forall f g s. Ok (-+>) s => (g :.: f) s -+> (f :.: g) s
+  transposeC = AddFun Matrix.transpose
+  {-# NOINLINE [0] transposeC #-}
+  
+instance (Foldable f, Zip f, Functor g) => MatrixMapCat (-+>) (g :.: f) where
+  linearC :: 
+    forall f g s. 
+    ( Ok (-+>) s, Foldable f, Zip f, Functor g, Num s) => 
+    (g :.: f) s -> f s -+> g s
+  linearC m = AddFun (Matrix.linear m)
+  {-# NOINLINE linearC #-}

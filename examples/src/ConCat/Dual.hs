@@ -37,6 +37,7 @@ import qualified ConCat.Category as C
 -- import qualified ConCat.AltCat as A
 import ConCat.AltCat
 import ConCat.AdditiveFun (Additive,Additive1(..))
+import qualified ConCat.Matrix as Matrix
 
 AbsTyImports
 
@@ -267,10 +268,10 @@ toDual f = unDual (toCcc f)
 instance 
   ( MatrixMapCat k m,
     TransposeCat k m,
-    MatrixMapCat k (Transposed m), 
-    Dim1 (Transposed m) ~ Dim2 m, 
-    Dim2 (Transposed m) ~ Dim1 m
+    MatrixMapCat k (Matrix.Transposed m), 
+    Matrix.Dim1 (Matrix.Transposed m) ~ Matrix.Dim2 m, 
+    Matrix.Dim2 (Matrix.Transposed m) ~ Matrix.Dim1 m
   ) => 
   MatrixMapCat (Dual k) m where
     linearC = Dual . linearC . transposeC
-    {-# NOINLINE [0] linearC #-}
+    {-# NOINLINE linearC #-}

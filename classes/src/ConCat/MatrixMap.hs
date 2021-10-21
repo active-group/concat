@@ -2,21 +2,23 @@
 
 module ConCat.MatrixMap (linearC, linear, bump, bumpC, tanhC, fmapC, maxC) where
 
+import ConCat.Additive (Additive)
 import qualified ConCat.Category as C
+import qualified ConCat.Matrix as Matrix
 
-linear :: C.MatrixMap m => m s -> C.Dim1 m s -> C.Dim2 m s
-linear = C.linear
+linear :: (Matrix.MatrixMap m, Additive s, Num s) => m s -> Matrix.Dim1 m s -> Matrix.Dim2 m s
+linear = Matrix.linear
 {-# INLINE [0] linear #-}
 
-linearC :: (C.MatrixMapCat k m, C.Ok k s) => m s -> C.Dim1 m s `k` C.Dim2 m s
+linearC :: (C.MatrixMapCat k m, C.Ok k s, Additive s, Num s) => m s -> Matrix.Dim1 m s `k` Matrix.Dim2 m s
 linearC = C.linearC
 {-# INLINE [0] linearC #-}
 
-bump :: (Num s, C.Bump b) => b s -> C.BumpRep b s
-bump = C.bump
+bump :: (Num s,Matrix.Bump b) => b s -> Matrix.BumpRep b s
+bump = Matrix.bump
 {-# INLINE [0] bump #-}
 
-bumpC :: (C.BumpCat k b, C.Ok k s) => b s `k` C.BumpRep b s
+bumpC :: (C.BumpCat k b, C.Ok k s, Num s) => b s `k` Matrix.BumpRep b s
 bumpC = C.bumpC
 {-# INLINE [0] bumpC #-}
 

@@ -27,6 +27,7 @@ library
   build-depends:       base >=4.9
                      , constraints >= 0.8
                      , containers >= 0.5.7.1
+                     , extra
                      , ghc-prim >= 0.5.0.0
                      , newtype-generics >= 0.5.3
                      , transformers >= 0.5.2.0
@@ -49,6 +50,7 @@ library
                        ConCat.Category
                        ConCat.AltCat
                        ConCat.ConstrainedFunctor
+                       ConCat.Matrix
                        ConCat.MatrixMap
   ghc-options:      -O2
                     -- -fobject-code here avoids error "mkPluginUsage: file not found"

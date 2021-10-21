@@ -58,7 +58,6 @@ import Data.Void
 import Data.Pointed (Pointed)
 import qualified Data.Pointed as Pointed
 import qualified ConCat.Pointed as ConCatPointed
-import qualified ConCat.MatrixMap as MatrixMap
 import qualified ConCat.Zip as ConCatZip
 import qualified ConCat.MinMax as ConCatMinMax
 import Data.Key (Zip(..))
@@ -118,15 +117,17 @@ import ConCat.Category
   , fmap', liftA2' 
   -- 
   -- , crossSecondFirst
-  , MatrixMap (linear)
   , MatrixMapCat 
+  , TransposeCat
+  , BumpCat
+  )
+import ConCat.Matrix 
+  ( MatrixMap (linear)
   , Dim1
   , Dim2
   , Transpose (transpose)
   , Transposed
-  , TransposeCat
   , Bump (bump)
-  , BumpCat
   , BumpRep
   )
 
@@ -878,8 +879,8 @@ Op0(minimumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(maximumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
 Op0(maximumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
-Op1(linearC, (Ok k s, MatrixMapCat k m) => m s -> Dim1 m s `k` Dim2 m s)
-Op0(bumpC, (Ok k s, BumpCat k b) => b s `k` BumpRep b s)
+Op1(linearC, (Ok k s, MatrixMapCat k m, Additive s, Num s) => m s -> Dim1 m s `k` Dim2 m s)
+Op0(bumpC, (Ok k s, BumpCat k b, Num s) => b s `k` BumpRep b s)
 Op0(transposeC, (Ok k s, TransposeCat k m) => m s `k` Transposed m s)
 
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
@@ -893,9 +894,9 @@ Catify(zip  , curry zipC)
 Catify(Pointed.point, pointC)
 Catify(ConCatPointed.point, pointC)
 Catify(sumA , sumAC)
-Catify(MatrixMap.linear, linearC)
-Catify(MatrixMap.bump, bumpC)
-Catify(transpose, transposeC) -- MatrixMap.transpose?
+Catify(linear, linearC)
+Catify(bump, bumpC)
+Catify(transpose, transposeC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)
