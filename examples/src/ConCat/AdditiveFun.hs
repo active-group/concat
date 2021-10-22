@@ -305,12 +305,20 @@ instance Matrix.Transpose (g :.: f) => TransposeCat (-+>) (g :.: f) where
   {-# NOINLINE [0] transposeC #-}
   
 instance (Foldable f, Zip f, Functor g) => MatrixMapCat (-+>) (g :.: f) where
-  linearC :: 
+  linearPC :: 
+    forall f g s. 
+    ( Ok (-+>) s, Foldable f, Zip f, Functor g, Num s) => 
+    f s -> (g :.: f) s -+> g s
+  linearPC v = AddFun (Matrix.linearP v)
+  linearXC :: 
     forall f g s. 
     ( Ok (-+>) s, Foldable f, Zip f, Functor g, Num s) => 
     (g :.: f) s -> f s -+> g s
-  linearC m = AddFun (Matrix.linear m)
-  {-# NOINLINE linearC #-}
+  linearXC m = AddFun (Matrix.linearX m)
+  outerVC v = AddFun (Matrix.outerV v)
+  {-# NOINLINE linearPC #-}
+  {-# NOINLINE linearXC #-}
+  {-# NOINLINE outerVC #-}
 
 instance Matrix.Bump f => BumpCat (-+>) f where
   bumpC = AddFun Matrix.bump

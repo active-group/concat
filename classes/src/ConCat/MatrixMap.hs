@@ -1,14 +1,14 @@
 {-# LANGUAGE TypeOperators #-}
 
-module ConCat.MatrixMap (linear) where
+module ConCat.MatrixMap (linearX) where
 
 import ConCat.Additive (Additive)
 import qualified ConCat.Category as C
 import qualified ConCat.Matrix as Matrix
 
-linear :: (Matrix.MatrixMap m, Additive s, Num s) => m s -> Matrix.Dim1 m s -> Matrix.Dim2 m s
-linear = Matrix.linear
-{-# INLINE [0] linear #-}
+linearX :: (Matrix.MatrixMap m, Additive s, Num s) => m s -> Matrix.Dim1 m s -> Matrix.Dim2 m s
+linearX = Matrix.linearX
+{-# INLINE [0] linearX #-}
 
 -- linearC :: (C.MatrixMapCat k m, C.Ok k s, Additive s, Num s) => m s -> Matrix.Dim1 m s `k` Matrix.Dim2 m s
 -- linearC = C.linearC

@@ -2679,11 +2679,17 @@ f `crossSecondFirst` g = second g . first f
 #endif
 
 class (Matrix.MatrixMap m, Category k) => MatrixMapCat k m where
-  linearC :: (Ok k s, Additive s, Num s) => m s -> Matrix.Dim1 m s `k` Matrix.Dim2 m s
+  linearPC :: (Ok k s, Additive s, Num s) => Matrix.Dim1 m s -> m s `k` Matrix.Dim2 m s
+  linearXC :: (Ok k s, Additive s, Num s) => m s -> Matrix.Dim1 m s `k` Matrix.Dim2 m s
+  outerVC :: (Ok k s, Num s) => Matrix.Dim1 m s -> Matrix.Dim2 m s `k` m s
 
 instance Matrix.MatrixMap m => MatrixMapCat (->) m where
-  linearC = IC.inline Matrix.linear
-  {-# OPINLINE linearC #-}
+  linearPC = IC.inline Matrix.linearP
+  linearXC = IC.inline Matrix.linearX
+  outerVC = IC.inline Matrix.outerV
+  {-# OPINLINE linearPC #-}
+  {-# OPINLINE linearXC #-}
+  {-# OPINLINE outerVC #-}
 
 class (Matrix.Transpose m, Category k) => TransposeCat k m where
   transposeC :: Ok k s => m s `k` Matrix.Transposed m s

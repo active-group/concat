@@ -18,7 +18,9 @@ import GHC.TypeLits
 class MatrixMap m where
   type Dim1 m :: Type -> Type
   type Dim2 m :: Type -> Type
-  linear :: (Additive s, Num s) => m s -> Dim1 m s -> Dim2 m s
+  linearP :: (Additive s, Num s) => Dim1 m s -> m s -> Dim2 m s
+  linearX :: (Additive s, Num s) => m s -> Dim1 m s -> Dim2 m s
+  outerV :: Num s => Dim1 m s -> Dim2 m s -> m s
 
 class Transpose m where
   type Transposed m :: Type -> Type
@@ -32,10 +34,15 @@ class Bump b where
 instance (Foldable f, Zip.Zip f, Functor g) => MatrixMap (g :.: f) where
   type Dim1 (g :.: f) = f
   type Dim2 (g :.: f) = g
-  linear (Comp1 ba) a = (<.> a) <$> ba
+  linearP a (Comp1 ba) = (<.> a) <$> ba
+  linearX (Comp1 ba) a = (<.> a) <$> ba
+  outerV b a = Comp1 ((*^ b) <$> a)
 
 (<.>) :: (Foldable a, Zip.Zip a, Additive s, Num s) => a s -> a s -> s
 xs <.> ys = sumA (Zip.zipWith (*) xs ys)
+
+(*^) :: (Functor a, Num s) => s -> a s -> a s
+s *^ v = (s *) <$> v
 
 instance (Distributive f, Functor g) => Transpose (g :.: f) where
   type Transposed (g :.: f) = f :.: g

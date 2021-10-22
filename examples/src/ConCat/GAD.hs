@@ -249,7 +249,7 @@ instance (ScalarCat k s, Ok k s, Floating s) => FloatingCat (GD k) s where
   sinC = scalarX sin cos
   cosC = scalarX cos (negate . sin)
   sqrtC = scalarX sqrt (recip . scale 2 . sqrt)
-  tanhC = scalarX tanh ((+ 1) . negate . (^2) . tanh)
+  tanhC = scalarX tanh ((+ 1) . negate . exp . scale 2 . log . tanh)
   {-# INLINE expC #-}
   {-# INLINE sinC #-}
   {-# INLINE cosC #-}
@@ -426,8 +426,12 @@ deriv h = snd P.. andDeriv h
 {-# INLINE deriv #-}
 
 instance MatrixMapCat k m => MatrixMapCat (GD k) m where
-  linearC m = linearD (linearC m) (linearC m)
-  {-# NOINLINE [0] linearC #-}
+  linearPC v = linearD (linearPC v) (linearPC v)
+  linearXC m = linearD (linearXC m) (linearXC m)
+  outerVC v = linearD (outerVC v) (outerVC v)
+  {-# NOINLINE [0] linearPC #-}
+  {-# NOINLINE [0] linearXC #-}
+  {-# NOINLINE [0] outerVC #-}
 
 instance BumpCat k m => BumpCat (GD k) m where
   bumpC = linearD bumpC bumpC

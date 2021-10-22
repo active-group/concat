@@ -117,7 +117,7 @@ affine ::
   ) =>
   m s ->
   b s -> Matrix.Dim2 m s
-affine m = MatrixMap.linear m . Matrix.bump
+affine m = Matrix.linearX m . Matrix.bump
 {-# INLINE affine #-}
 
 --        m        :: b (Bump a s)

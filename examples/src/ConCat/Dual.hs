@@ -273,8 +273,12 @@ instance
     Matrix.Dim2 (Matrix.Transposed m) ~ Matrix.Dim1 m
   ) => 
   MatrixMapCat (Dual k) m where
-    linearC = Dual . linearC . transposeC
-    {-# NOINLINE linearC #-}
+    linearPC = Dual . outerVC
+    linearXC = Dual . linearXC . transposeC
+    outerVC = Dual . linearPC
+    {-# NOINLINE linearPC #-}
+    {-# NOINLINE linearXC #-}
+    {-# NOINLINE outerVC #-}
 
 instance BumpCat k v => BumpCat (Dual k) v where
   bumpC = Dual unbumpC
