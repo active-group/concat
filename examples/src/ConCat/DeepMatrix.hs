@@ -157,6 +157,9 @@ relus :: (Functor f, Ord a, Num a) => Unop (f a)
 relus = fmap (max 0)
 {-# INLINE relus #-}
 
+tanhs :: (Functor f, Floating a) => Unop (f a)
+tanhs = fmap tanh
+
 -- | Affine followed by RELUs.
 affReluP :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
   ( Matrix.MatrixMap m,
@@ -186,17 +189,31 @@ affReluX ::
 affReluX m = relus . affineX m
 {-# INLINE affReluX #-}
 
--- affTanh ::
---   ( Matrix.MatrixMap m,
---     Matrix.Bump b,
---     Matrix.BumpRep b ~ Matrix.Dim1 m,
---     Functor (Matrix.Dim2 m),
---     Additive s,
---     Floating s
---   ) =>
---   b s ->
---   (m s -> Matrix.Dim2 m s)
--- affTanh v = fmap tanh . affine v
+affTanhP ::
+  ( Matrix.MatrixMap m,
+    Matrix.Bump b,
+    Matrix.BumpRep b ~ Matrix.Dim1 m,
+    Functor (Matrix.Dim2 m),
+    Additive s,
+    Floating s
+  ) =>
+  b s ->
+  (m s -> Matrix.Dim2 m s)
+affTanhP v = tanhs . affineP v
+{-# INLINE affTanhP #-}
+
+affTanhX ::
+  ( Matrix.MatrixMap m,
+    Matrix.Bump b,
+    Matrix.BumpRep b ~ Matrix.Dim1 m,
+    Functor (Matrix.Dim2 m),
+    Additive s,
+    Floating s
+  ) =>
+  m s ->
+  (b s -> Matrix.Dim2 m s)
+affTanhX m = tanhs . affineX m
+{-# INLINE affTanhX #-}
 
 -- affRelu = (result.result) relus affine
 
