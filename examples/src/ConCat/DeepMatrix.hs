@@ -108,7 +108,19 @@ outerV  = (>.<)
 -- type a --+ b = Bump a --* b
 
 -- | Affine application
-affine ::
+affineP ::
+  ( Matrix.MatrixMap m,
+    Matrix.Bump b,
+    Matrix.BumpRep b ~ Matrix.Dim1 m,
+    Additive s,
+    Num s
+  ) =>
+  b s ->
+  m s -> Matrix.Dim2 m s
+affineP v = Matrix.linearP (Matrix.bump v)
+{-# INLINE affineP #-}
+
+affineX ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
@@ -117,8 +129,8 @@ affine ::
   ) =>
   m s ->
   b s -> Matrix.Dim2 m s
-affine m = Matrix.linearX m . Matrix.bump
-{-# INLINE affine #-}
+affineX m = Matrix.linearX m . Matrix.bump
+{-# INLINE affineX #-}
 
 --        m        :: b (Bump a s)
 -- linear m        :: Bump a s -> b s
@@ -146,7 +158,21 @@ relus = fmap (max 0)
 {-# INLINE relus #-}
 
 -- | Affine followed by RELUs.
-affRelu :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
+affReluP :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
+  ( Matrix.MatrixMap m,
+    Matrix.Bump b,
+    Matrix.BumpRep b ~ Matrix.Dim1 m,
+    Functor (Matrix.Dim2 m),
+    Additive s,
+    Num s,
+    Ord s
+  ) =>
+  b s ->
+  (m s -> Matrix.Dim2 m s)
+affReluP v = relus . affineP v
+{-# INLINE affReluP #-}
+
+affReluX ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
@@ -157,20 +183,20 @@ affRelu :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
   ) =>
   m s ->
   (b s -> Matrix.Dim2 m s)
-affRelu l = relus . affine l
-{-# INLINE affRelu #-}
+affReluX m = relus . affineX m
+{-# INLINE affReluX #-}
 
-affTanh ::
-  ( Matrix.MatrixMap m,
-    Matrix.Bump b,
-    Matrix.BumpRep b ~ Matrix.Dim1 m,
-    Functor (Matrix.Dim2 m),
-    Additive s,
-    Floating s
-  ) =>
-  m s ->
-  (b s -> Matrix.Dim2 m s)
-affTanh m = fmap tanh . affine m
+-- affTanh ::
+--   ( Matrix.MatrixMap m,
+--     Matrix.Bump b,
+--     Matrix.BumpRep b ~ Matrix.Dim1 m,
+--     Functor (Matrix.Dim2 m),
+--     Additive s,
+--     Floating s
+--   ) =>
+--   b s ->
+--   (m s -> Matrix.Dim2 m s)
+-- affTanh v = fmap tanh . affine v
 
 -- affRelu = (result.result) relus affine
 
