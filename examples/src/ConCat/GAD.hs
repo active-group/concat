@@ -249,7 +249,7 @@ instance (ScalarCat k s, Ok k s, Floating s) => FloatingCat (GD k) s where
   sinC = scalarX sin cos
   cosC = scalarX cos (negate . sin)
   sqrtC = scalarX sqrt (recip . scale 2 . sqrt)
-  tanhC = scalarX tanh ((+ 1) . negate . exp . scale 2 . log . tanh)
+  tanhC = scalarR tanh ((+ 1) . negate . exp . scale 2 . log)
   {-# INLINE expC #-}
   {-# INLINE sinC #-}
   {-# INLINE cosC #-}
@@ -434,7 +434,7 @@ instance MatrixMapCat k m => MatrixMapCat (GD k) m where
   {-# NOINLINE [0] outerVC #-}
 
 instance BumpCat k m => BumpCat (GD k) m where
-  bumpC = linearD bumpC bumpC
+  bumpC = linearD bumpC bumpC -- bump0?
   unbumpC = linearD unbumpC unbumpC
   {-# NOINLINE [0] bumpC #-}
   {-# NOINLINE [0] unbumpC #-}
