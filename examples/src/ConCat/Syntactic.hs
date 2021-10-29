@@ -44,6 +44,7 @@ import ConCat.AltCat
 import ConCat.Misc (Unop)
 import ConCat.Additive (Additive)
 import ConCat.Rep
+import ConCat.Matrix (MatrixMap (..), Transpose (..))
 -- import ConCat.Finite
 
 #ifdef ShowTypes
@@ -554,3 +555,15 @@ ppretty a p = pPrintPrec prettyNormal p a
 appPrec :: Prec
 appPrec = 11 -- was 10
 -- Revisit
+
+instance MatrixMap m => MatrixMapCat Syn m where
+  linearPC _ = app0 "linearPC"
+  linearXC _ = app0 "linearXC"
+  outerVC _ = app0 "outerVC"
+  INLINER(linearPC)
+  INLINER(linearXC)
+  INLINER(outerVC)
+
+instance Transpose m => TransposeCat Syn m where
+  transposeC = app0 "transposeC"
+  INLINER(transposeC)
