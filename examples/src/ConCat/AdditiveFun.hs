@@ -316,12 +316,12 @@ instance (Foldable f, Zip f, Functor g) => MatrixMapCat (-+>) (g :.: f) where
     (g :.: f) s -> f s -+> g s
   linearXC m = AddFun (Matrix.linearX m)
   outerVC v = AddFun (Matrix.outerV v)
-  {-# NOINLINE linearPC #-}
-  {-# NOINLINE linearXC #-}
-  {-# NOINLINE outerVC #-}
+  {-# OPINLINE linearPC #-}
+  {-# OPINLINE linearXC #-}
+  {-# OPINLINE outerVC #-}
 
 instance Matrix.Bump f => BumpCat (-+>) f where
   bumpC = AddFun Matrix.bump
   unbumpC = AddFun Matrix.unbump
-  {-# NOINLINE bumpC #-}
-  {-# NOINLINE unbumpC #-}
+  {-# OPINLINE bumpC #-}
+  {-# OPINLINE unbumpC #-}

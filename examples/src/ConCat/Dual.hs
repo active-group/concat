@@ -276,12 +276,12 @@ instance
     linearPC v = Dual (outerVC v)
     linearXC m = Dual (linearXC (transposeC m))
     outerVC v = Dual (linearPC v)
-    {-# NOINLINE linearPC #-}
-    {-# NOINLINE linearXC #-}
-    {-# NOINLINE outerVC #-}
+    {-# INLINE linearPC #-}
+    {-# INLINE linearXC #-}
+    {-# INLINE outerVC #-}
 
 instance BumpCat k v => BumpCat (Dual k) v where
   bumpC = Dual unbumpC
   unbumpC = Dual bumpC
-  {-# NOINLINE bumpC #-}
-  {-# NOINLINE unbumpC #-}
+  {-# INLINE bumpC #-}
+  {-# INLINE unbumpC #-}

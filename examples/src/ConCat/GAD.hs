@@ -429,12 +429,12 @@ instance MatrixMapCat k m => MatrixMapCat (GD k) m where
   linearPC v = linearD (linearPC v) (linearPC v)
   linearXC m = linearD (linearXC m) (linearXC m)
   outerVC v = linearD (outerVC v) (outerVC v)
-  {-# NOINLINE [0] linearPC #-}
-  {-# NOINLINE [0] linearXC #-}
-  {-# NOINLINE [0] outerVC #-}
+  {-# INLINE linearPC #-}
+  {-# INLINE linearXC #-}
+  {-# INLINE outerVC #-}
 
 instance BumpCat k m => BumpCat (GD k) m where
   bumpC = linearD bumpC bumpC -- bump0?
   unbumpC = linearD unbumpC unbumpC
-  {-# NOINLINE [0] bumpC #-}
-  {-# NOINLINE [0] unbumpC #-}
+  {-# INLINE bumpC #-}
+  {-# INLINE unbumpC #-}
