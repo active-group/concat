@@ -273,9 +273,9 @@ instance
     Matrix.Dim2 (Matrix.Transposed m) ~ Matrix.Dim1 m
   ) => 
   MatrixMapCat (Dual k) m where
-    linearPC = Dual . outerVC
-    linearXC = Dual . linearXC . transposeC
-    outerVC = Dual . linearPC
+    linearPC v = Dual (outerVC v)
+    linearXC m = Dual (linearXC (transposeC m))
+    outerVC v = Dual (linearPC v)
     {-# NOINLINE linearPC #-}
     {-# NOINLINE linearXC #-}
     {-# NOINLINE outerVC #-}
