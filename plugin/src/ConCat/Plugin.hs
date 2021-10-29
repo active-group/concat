@@ -278,6 +278,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      -- This version fails gracefully when we can't make the coercions.
      -- Then we can see further into the error.
      e@(Cast e' (coercionRole -> Representational))
+       | dtrace "found representational cast" (ppr (exprType e, exprType e')) False -> undefined
        | FunTy' a  b  <- exprType e
        , FunTy' a' b' <- exprType e'
        , Just coA    <- mkCoerceC_maybe cat a a'
