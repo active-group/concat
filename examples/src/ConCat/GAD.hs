@@ -45,6 +45,8 @@ import ConCat.Additive
 import ConCat.AltCat
 import ConCat.Rep
 
+import qualified ConCat.Inline.ClassOp as IC
+
 AbsTyImports
 
 -- TODO: try again with importing Category qualified and AltCat unqualified.
@@ -426,9 +428,9 @@ deriv h = snd P.. andDeriv h
 {-# INLINE deriv #-}
 
 instance MatrixMapCat k m => MatrixMapCat (GD k) m where
-  linearPC v = linearD (linearPC v) (linearPC v)
-  linearXC m = linearD (linearXC m) (linearXC m)
-  outerVC v = linearD (outerVC v) (outerVC v)
+  linearPC v = linearD (IC.inline linearPC v) (IC.inline linearPC v)
+  linearXC m = linearD (IC.inline linearXC m) (IC.inline linearXC m)
+  outerVC v = linearD (IC.inline outerVC v) (IC.inline outerVC v)
   {-# INLINE linearPC #-}
   {-# INLINE linearXC #-}
   {-# INLINE outerVC #-}
