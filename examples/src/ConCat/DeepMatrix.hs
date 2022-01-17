@@ -120,6 +120,19 @@ affineP ::
 affineP v = Matrix.linearP (Matrix.bump v)
 {-# INLINE affineP #-}
 
+affineP' ::
+  ( Matrix.MatrixMap m,
+    Matrix.Bump b,
+    Matrix.BumpRep b ~ Matrix.Dim1 m,
+    Additive s,
+    Num s
+  ) =>
+  m s -> 
+  b s ->
+  Matrix.Dim2 m s
+affineP' m v = Matrix.linearP (Matrix.bump v) m
+{-# INLINE affineP' #-}
+
 affineX ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
@@ -175,6 +188,21 @@ affReluP :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
 affReluP v = relus . affineP v
 {-# INLINE affReluP #-}
 
+affReluP' :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
+  ( Matrix.MatrixMap m,
+    Matrix.Bump b,
+    Matrix.BumpRep b ~ Matrix.Dim1 m,
+    Functor (Matrix.Dim2 m),
+    Additive s,
+    Num s,
+    Ord s
+  ) =>
+  m s -> 
+  b s ->
+  Matrix.Dim2 m s
+affReluP' = ((.).(.)) relus affineP'
+{-# INLINE affReluP' #-}
+
 affReluX ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
@@ -201,6 +229,20 @@ affTanhP ::
   (m s -> Matrix.Dim2 m s)
 affTanhP v = tanhs . affineP v
 {-# INLINE affTanhP #-}
+
+affTanhP' ::
+  ( Matrix.MatrixMap m,
+    Matrix.Bump b,
+    Matrix.BumpRep b ~ Matrix.Dim1 m,
+    Functor (Matrix.Dim2 m),
+    Additive s,
+    Floating s
+  ) =>
+  m s -> 
+  b s ->
+  Matrix.Dim2 m s
+affTanhP' = ((.).(.)) tanhs affineP'
+{-# INLINE affTanhP' #-}
 
 affTanhX ::
   ( Matrix.MatrixMap m,
