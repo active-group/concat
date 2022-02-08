@@ -285,3 +285,10 @@ instance BumpCat k v => BumpCat (Dual k) v where
   unbumpC = Dual bumpC
   {-# INLINE bumpC #-}
   {-# INLINE unbumpC #-}
+
+instance (MatrixMapCat2 k f2 f1) => MatrixMapCat2 (Dual k) f2 f1 where
+  linearC v = Dual (outerVecC v)
+  outerVecC v = Dual (linearC v)
+  {-# INLINE linearC #-}
+  {-# INLINE outerVecC #-}
+{- Dual, GAD, Syntactic-}

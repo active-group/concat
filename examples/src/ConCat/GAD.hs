@@ -440,3 +440,9 @@ instance BumpCat k m => BumpCat (GD k) m where
   unbumpC = linearD unbumpC unbumpC
   {-# INLINE bumpC #-}
   {-# INLINE unbumpC #-}
+
+instance MatrixMapCat2 k f2 f1 => MatrixMapCat2 (GD k) f2 f1 where
+  linearC v = linearD (IC.inline linearC v) (IC.inline linearC v)
+  outerVecC v = linearD (IC.inline outerVecC v) (IC.inline outerVecC v)
+  {-# INLINE linearC #-}
+  {-# INLINE outerVecC #-}

@@ -44,7 +44,7 @@ import ConCat.AltCat
 import ConCat.Misc (Unop)
 import ConCat.Additive (Additive)
 import ConCat.Rep
-import ConCat.Matrix (MatrixMap (..), Transpose (..), Bump (..))
+import ConCat.Matrix (MatrixMap (..), MatrixMap2 (..), Transpose (..), Bump (..))
 -- import ConCat.Finite
 
 #ifdef ShowTypes
@@ -573,3 +573,9 @@ instance Bump m => BumpCat Syn m where
   unbumpC = app0 "unbumpC"
   INLINER(bumpC)
   INLINER(unbumpC)
+
+instance MatrixMap2 f2 f1 => MatrixMapCat2 Syn f2 f1 where
+  linearC _ = app0 "linearC"
+  outerVecC _ = app0 "outerVecC"
+  INLINER(linearC)
+  INLINER(outerVecC)

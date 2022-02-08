@@ -119,6 +119,7 @@ import ConCat.Category
   -- 
   -- , crossSecondFirst
   , MatrixMapCat 
+  , MatrixMapCat2 
   , TransposeCat
   , BumpCat
   )
@@ -126,6 +127,8 @@ import ConCat.Matrix
   ( MatrixMap (linearP, linearX, outerV)
   , Dim1
   , Dim2
+  , MatrixMap2 (linear, outerVec)
+  , Matrix2
   , Transpose (transpose)
   , Transposed
   , Bump (bump, unbump)
@@ -884,6 +887,8 @@ Op0(maximumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :* 
 Op1(linearPC, (Ok k s, MatrixMapCat k m, Additive s, Num s) => Dim1 m s -> m s `k` Dim2 m s)
 Op1(linearXC, (Ok k s, MatrixMapCat k m, Additive s, Num s) => m s -> Dim1 m s `k` Dim2 m s)
 Op1(outerVC, (Ok k s, MatrixMapCat k m, Num s) => Dim1 m s -> Dim2 m s `k` m s)
+Op1(linearC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => f1 s -> Matrix2 f2 f1 s `k` f2 s)
+Op1(outerVecC, (Ok k s, MatrixMapCat2 k f2 f1, Num s) => f1 s -> f2 s `k` Matrix2 f2 f1 s)
 Op0(bumpC, (Ok k s, BumpCat k b, Num s) => b s `k` BumpRep b s)
 Op0(unbumpC, (Ok k s, BumpCat k b, Num s) => BumpRep b s `k` b s)
 Op0(transposeC, (Ok k s, TransposeCat k m) => m s `k` Transposed m s)
@@ -903,6 +908,8 @@ Catify(linearX, linearXC)
 Catify(linearP, linearPC)
 Catify(outerV, outerVC)
 Catify(MatrixMap.linearX, linearXC)
+Catify(linear, linearC)
+Catify(outerVec, outerVecC)
 Catify(bump, bumpC)
 Catify(unbump, unbumpC)
 Catify(transpose, transposeC)

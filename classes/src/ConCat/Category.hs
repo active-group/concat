@@ -2703,3 +2703,13 @@ instance Matrix.Bump b => BumpCat (->) b where
   unbumpC = IC.inline Matrix.unbump
   {-# OPINLINE bumpC #-}
   {-# OPINLINE unbumpC #-}
+
+class (Matrix.MatrixMap2 f2 f1, Category k) => MatrixMapCat2 k f2 f1 where
+  linearC :: (Ok k s, Additive s, Num s) => f1 s -> Matrix.Matrix2 f2 f1 s `k` f2 s
+  outerVecC :: (Ok k s, Num s) => f1 s -> f2 s `k` Matrix.Matrix2 f2 f1 s
+
+instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
+  linearC = IC.inline Matrix.linear
+  outerVecC = IC.inline Matrix.outerVec
+  {-# OPINLINE linearC #-}
+  {-# OPINLINE outerVecC #-}

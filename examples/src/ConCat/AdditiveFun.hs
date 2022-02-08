@@ -32,8 +32,10 @@ import Data.Constraint (Dict(..),(:-)(..))
 import Data.Distributive (Distributive (..))
 import Data.Key (Zip)
 import Data.Pointed (Pointed)
+import Data.Vector.Sized (Vector)
 import Data.Functor.Rep (Representable(tabulate,index))
 import GHC.Generics ((:.:) (..))
+import GHC.TypeLits (KnownNat)
 
 import ConCat.Orphans ()
 import qualified ConCat.Category as Category
@@ -325,3 +327,17 @@ instance Matrix.Bump f => BumpCat (-+>) f where
   unbumpC = AddFun Matrix.unbump
   {-# OPINLINE bumpC #-}
   {-# OPINLINE unbumpC #-}
+
+instance KnownNat n => MatrixMapCat2 (-+>) (Vector m) (Vector n) where
+  linearC ::
+    forall m n s.
+    (Ok (-+>) s, KnownNat n, Additive s, Num s) =>
+    Vector n s -> Matrix.Matrix2 (Vector m) (Vector n) s -+> Vector m s
+  linearC v = AddFun (Matrix.linear v)
+  outerVecC ::
+    forall m n s.
+    (Ok (-+>) s, KnownNat n, Num s) =>
+    Vector n s -> Vector m s -+> Matrix.Matrix2 (Vector m) (Vector n) s
+  outerVecC v = AddFun (Matrix.outerVec v)
+  {-# OPINLINE linearC #-}
+  {-# OPINLINE outerVecC #-}
