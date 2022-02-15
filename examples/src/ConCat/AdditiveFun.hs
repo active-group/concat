@@ -328,16 +328,22 @@ instance Matrix.Bump f => BumpCat (-+>) f where
   {-# OPINLINE bumpC #-}
   {-# OPINLINE unbumpC #-}
 
-instance KnownNat n => MatrixMapCat2 (-+>) (Vector m) (Vector n) where
-  linearC ::
-    forall m n s.
-    (Ok (-+>) s, KnownNat n, Additive s, Num s) =>
-    Vector n s -> Matrix.Matrix2 (Vector m) (Vector n) s -+> Vector m s
-  linearC v = AddFun (Matrix.linear v)
-  outerVecC ::
-    forall m n s.
-    (Ok (-+>) s, KnownNat n, Num s) =>
-    Vector n s -> Vector m s -+> Matrix.Matrix2 (Vector m) (Vector n) s
-  outerVecC v = AddFun (Matrix.outerVec v)
-  {-# OPINLINE linearC #-}
-  {-# OPINLINE outerVecC #-}
+-- instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (-+>) f2 f1 where
+--   linearC v = AddFun (Matrix.linear v)
+--   outerVecC v = AddFun (Matrix.outerVec v)
+--   {-# OPINLINE linearC #-}
+--   {-# OPINLINE outerVecC #-}
+
+-- instance KnownNat n => MatrixMapCat2 (-+>) (Vector m) (Vector n) where
+--   linearC ::
+--     forall m n s.
+--     (Ok (-+>) s, KnownNat n, Additive s, Num s) =>
+--     Vector n s -> Matrix.Matrix2 (Vector m) (Vector n) s -+> Vector m s
+--   linearC v = AddFun (Matrix.linear v)
+--   outerVecC ::
+--     forall m n s.
+--     (Ok (-+>) s, KnownNat n, Num s) =>
+--     Vector n s -> Vector m s -+> Matrix.Matrix2 (Vector m) (Vector n) s
+--   outerVecC v = AddFun (Matrix.outerVec v)
+--   {-# OPINLINE linearC #-}
+--   {-# OPINLINE outerVecC #-}

@@ -68,10 +68,12 @@ instance Bump [] where
 
 class MatrixMap2 f2 f1 where
   type Matrix2 f2 f1 :: Type -> Type
-  linear :: (Additive s, Num s) => f1 s -> Matrix2 f2 f1 s -> f2 s
+  linearMat :: (Additive s, Num s) => f1 s -> Matrix2 f2 f1 s -> f2 s
+  linearVec :: (Additive s, Num s) => Matrix2 f2 f1 s -> f1 s -> f2 s
   outerVec :: Num s => f1 s -> f2 s -> Matrix2 f2 f1 s
 
 instance KnownNat n => MatrixMap2 (Vector.Vector m) (Vector.Vector n) where
   type Matrix2 (Vector.Vector m) (Vector.Vector n) = Vector.Vector m :.: Vector.Vector n
-  linear a (Comp1 ba) = (<.> a) <$> ba
+  linearMat a (Comp1 ba) = (<.> a) <$> ba
+  linearVec (Comp1 ba) a = (<.> a) <$> ba
   outerVec b a = Comp1 ((*^ b) <$> a)

@@ -575,7 +575,9 @@ instance Bump m => BumpCat Syn m where
   INLINER(unbumpC)
 
 instance MatrixMap2 f2 f1 => MatrixMapCat2 Syn f2 f1 where
-  linearC _ = app0 "linearC"
+  linearMatC _ = app0 "linearMatC"
+  linearVecC _ = app0 "linearVecC"
   outerVecC _ = app0 "outerVecC"
-  INLINER(linearC)
+  INLINER(linearMatC)
+  INLINER(linearVecC)
   INLINER(outerVecC)

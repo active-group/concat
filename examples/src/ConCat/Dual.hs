@@ -286,9 +286,16 @@ instance BumpCat k v => BumpCat (Dual k) v where
   {-# INLINE bumpC #-}
   {-# INLINE unbumpC #-}
 
-instance (MatrixMapCat2 k f2 f1) => MatrixMapCat2 (Dual k) f2 f1 where
-  linearC v = Dual (outerVecC v)
-  outerVecC v = Dual (linearC v)
-  {-# INLINE linearC #-}
-  {-# INLINE outerVecC #-}
-{- Dual, GAD, Syntactic-}
+instance 
+  ( MatrixMapCat2 k f2 f1, 
+    TransposeCat k (Matrix.Matrix2 f2 f1),
+    Matrix.Transposed (Matrix.Matrix2 f2 f1) ~ Matrix.Matrix2 f1 f2,
+    MatrixMapCat2 k f1 f2
+  ) => 
+  MatrixMapCat2 (Dual k) f2 f1 where
+    linearMatC v = Dual (outerVecC v)
+    linearVecC m = Dual (linearVecC (transposeC m))
+    outerVecC v = Dual (linearMatC v)
+    {-# INLINE linearMatC #-}
+    {-# INLINE linearVecC #-}
+    {-# INLINE outerVecC #-}
