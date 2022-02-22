@@ -107,6 +107,58 @@ outerV  = (>.<)
 -- infixr 1 --+
 -- type a --+ b = Bump a --* b
 
+affineMat ::
+  ( Matrix.Bump b,
+    Matrix.MatrixMap2 f (Matrix.BumpRep b),
+    Additive s,
+    Num s
+  ) =>
+  b s ->
+  Matrix.Matrix2 f (Matrix.BumpRep b) s ->
+  f s
+affineMat v = Matrix.linearMat (Matrix.bump v)
+{-# INLINE affineMat #-}
+
+affineVec ::
+  ( Matrix.Bump b,
+    Matrix.MatrixMap2 f (Matrix.BumpRep b),
+    Additive s,
+    Num s
+  ) =>
+  Matrix.Matrix2 f (Matrix.BumpRep b) s ->
+  b s ->
+  f s
+affineVec m = Matrix.linearVec m . Matrix.bump
+{-# INLINE affineVec #-}
+
+affMatTanh ::
+  ( Matrix.Bump b,
+    Matrix.MatrixMap2 f (Matrix.BumpRep b),
+    Additive s,
+    Num s,
+    Floating s,
+    Functor f
+  ) =>
+  b s ->
+  Matrix.Matrix2 f (Matrix.BumpRep b) s ->
+  f s
+affMatTanh = ((.).(.)) tanhs affineMat
+{-# affMatTanh #-}
+
+affVecTanh ::
+  ( Matrix.Bump b,
+    Matrix.MatrixMap2 f (Matrix.BumpRep b),
+    Additive s,
+    Num s,
+    Floating s,
+    Functor f
+  ) =>
+  b s ->
+  Matrix.Matrix2 f (Matrix.BumpRep b) s ->
+  f s
+affVecTanh = ((.).(.)) tanhs affineMat
+{-# affVecTanh #-}
+
 -- | Affine application
 affineP ::
   ( Matrix.MatrixMap m,
