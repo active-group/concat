@@ -442,9 +442,10 @@ instance BumpCat k m => BumpCat (GD k) m where
   {-# INLINE unbumpC #-}
 
 instance MatrixMapCat2 k f2 f1 => MatrixMapCat2 (GD k) f2 f1 where
-  linearMatC v = linearD (IC.inline linearMatC v) (IC.inline linearMatC v)
-  linearVecC v = linearD (IC.inline linearVecC v) (IC.inline linearVecC v)
-  outerVecC v = linearD (IC.inline outerVecC v) (IC.inline outerVecC v)
+  -- using IC.inline here makes linting from the plugin fail
+  linearMatC v = linearD (linearMatC v) (linearMatC v)
+  linearVecC v = linearD (linearVecC v) (linearVecC v)
+  outerVecC v = linearD (outerVecC v) (outerVecC v)
   {-# INLINE linearMatC #-}
   {-# INLINE linearVecC #-}
   {-# INLINE outerVecC #-}
