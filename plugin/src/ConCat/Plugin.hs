@@ -728,7 +728,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
    --  * a list of type arguments `ts`
    -- returns  an expression of type
    --   t1 ts `cat` t2 ts
-   -- built using (.), reprC and abstC,
+   -- built using (.), fmapC, reprC and abstC
    --
    -- goCoercion checks that the output types make sense; goCoercion' does the work
    goCoercion :: Coercion -> [Type] -> CoreExpr
@@ -766,9 +766,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
 
    -- Newtype wrapper
    -- This _might_ be a newtype, so lets see if mkReprC works
-   -- For now, we the type arguments must not be coerced.
-   -- TODO: Check whether the resulting type actually matches the expectation
-   -- TODO: The resulting type may be too simplified.
+   -- For now, the type arguments must not be coerced (usually there are none for newtypes)
    goCoercion' co@(AxiomInstCo _ 0 cos) ts | all isReflCo cos
     -- = mkReprC' cat (t1 `mkAppTys` ts)
     = fromMaybe (pprPanic "goCoercion AxiomInstCo: failed catOpMaybe" (ppr co)) $
@@ -789,20 +787,11 @@ ccc (CccEnv {..}) (Ops {..}) cat =
     | not (null ts)
     = pprPanic "goCoercion': oddly kinded FunCo" (ppr co $$ ppr ts)
 
-   {- Code seems to be ok, but fails with missing instances
-
    -- If we have "<t>_R -> co2", then we can use the Functor instance for "(->) t"
     | Just (ty1, _role) <- isReflCo_maybe co1
-    = let h = mkTyConApp funTyCon [liftedTypeKind, liftedTypeKind, ty1]
+    = let h = mkTyConApp funTyCon [liftedRepTy, liftedRepTy, ty1]
       in onDict (onDict (Var fmapV `mkTyApps` [cat, h, ty21, ty22])) `App` goCoercion co2 []
     where Pair ty21 ty22 = coercionKind co2
-   -}
-
-   --  = mkCompose funCat (goCoercion co2 ts) (goCoercion co1 ts)
-   --
-
-   -- goCoercion' (FunCo Representational co1 co2) ts
-   --  = mkCompose funCat (goCoercion co2 ts) (goCoercion co1 ts)
 
    goCoercion' co ts
        | dtrace "goCoercion giving up, falling back to mkCoerceC" (ppr (co, t1, t2)) True
