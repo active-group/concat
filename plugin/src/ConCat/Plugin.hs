@@ -785,12 +785,27 @@ ccc (CccEnv {..}) (Ops {..}) cat =
       catOpMaybe cat abstCV [t1 `mkAppTys` ts, t2 `mkAppTys` ts]
      where Pair t1 t2 = coercionKind co
 
-   -- what do do here?
-   --goCoercion' (FunCo Representational co1 co2) ts
-   --  = pprPanic "FunCo" (ppr ())
+   goCoercion' co@(FunCo Representational co1 co2) ts
+    | not (null ts)
+    = pprPanic "goCoercion': oddly kinded FunCo" (ppr co $$ ppr ts)
+
+   {- Code seems to be ok, but fails with missing instances
+
+   -- If we have "<t>_R -> co2", then we can use the Functor instance for "(->) t"
+    | Just (ty1, _role) <- isReflCo_maybe co1
+    = let h = mkTyConApp funTyCon [liftedTypeKind, liftedTypeKind, ty1]
+      in onDict (onDict (Var fmapV `mkTyApps` [cat, h, ty21, ty22])) `App` goCoercion co2 []
+    where Pair ty21 ty22 = coercionKind co2
+   -}
+
+   --  = mkCompose funCat (goCoercion co2 ts) (goCoercion co1 ts)
+   --
+
+   -- goCoercion' (FunCo Representational co1 co2) ts
+   --  = mkCompose funCat (goCoercion co2 ts) (goCoercion co1 ts)
 
    goCoercion' co ts
-       | dtrace "goCoercion giving up, falling back to mkCoerceC" (ppr (t1, t2, co)) True
+       | dtrace "goCoercion giving up, falling back to mkCoerceC" (ppr (co, t1, t2)) True
        = mkCoerceC cat (t1 `mkAppTys` ts) (t2 `mkAppTys` ts)
      where Pair t1 t2 = coercionKind co
 
