@@ -49,7 +49,7 @@ import CoreArity (etaExpand)
 import CoreLint (lintExpr)
 import DynamicLoading
 import MkId (mkDictSelRhs,coerceId)
-import Pair (Pair(..))
+import Pair (Pair(..), swap)
 import PrelNames (leftDataConName,rightDataConName
                  ,floatTyConKey,doubleTyConKey,integerTyConKey
                  ,intTyConKey,boolTyConKey)
@@ -290,8 +290,8 @@ ccc (CccEnv {..}) (Ops {..}) cat =
        | FunCo Representational co1 co2 <- co
        --, Just coA    <- mkCoerceC_maybe cat a a'
        --, Just coB    <- mkCoerceC_maybe cat b' b
-       , let coA    = goCoercion co1 [] -- a a'
-       , let coB    = goCoercion co2 [] -- b' b
+       , let coA    = goCoercion True co1 [] -- a a'
+       , let coB    = goCoercion True co2 [] -- b' b
        ->
           Doing("top representational cast")
           -- Will I get unnecessary coerceCs due to nominal-able sub-coercions?
@@ -724,79 +724,82 @@ ccc (CccEnv {..}) (Ops {..}) cat =
       catClosed = isClosed cat
 
    -- Given
+   --
+   --  * a desired polarity
    --  * a representational coercion co :: t1 ~ t2
    --  * a list of type arguments `ts`
+   --
    -- returns  an expression of type
-   --   t1 ts `cat` t2 ts
+   --   t1 ts `cat` t2 ts (if polarity = True)
+   --   t2 ts `cat` t1 ts (if polarity = False)
+   --
    -- built using (.), fmapC, reprC and abstC
    --
+   --
    -- goCoercion checks that the output types make sense; goCoercion' does the work
-   goCoercion :: Coercion -> [Type] -> CoreExpr
-   goCoercion co ts
+   goCoercion :: Bool -> Coercion -> [Type] -> CoreExpr
+   goCoercion pol co ts
      | Just (t1',t2') <- tyArgs2_maybe (exprType exp)
      , (t1 `mkAppTys` ts) `eqType` t1'
      , (t2 `mkAppTys` ts) `eqType` t2'
      = exp
      | Just (_t1',_t2') <- tyArgs2_maybe (exprType exp)
-     = pprPanic "goCoercion mismatch:" (ppr co $$ ppr (coercionKind co) $$ ppr ts $$ pprWithType exp)
+     = pprPanic "goCoercion mismatch:" $
+       ppr pol $$ ppr co $$ ppr (coercionKind co) $$ ppr ts $$ pprWithType exp
      | otherwise
-     = pprPanic "goCoercion not returning arrow:" (ppr co $$ ppr (coercionKind co) $$ ppr ts $$ pprWithType exp)
+     = pprPanic "goCoercion not returning categorial arrow:" $
+       ppr pol $$ ppr co $$ ppr (coercionKind co) $$ ppr ts $$ pprWithType exp
 
-     where exp = goCoercion' co ts
-           Pair t1 t2 = coercionKind co
+     where exp = goCoercion' pol co ts
+           Pair t1 t2 = (if pol then id else swap) $ coercionKind co
 
-   goCoercion' :: Coercion -> [Type] -> CoreExpr
+   goCoercion' :: Bool -> Coercion -> [Type] -> CoreExpr
    -- Reflexivity
-   goCoercion' (Refl ty)          ts = mkId cat (ty `mkAppTys` ts)
-   goCoercion' (GRefl _ ty MRefl) ts = mkId cat (ty `mkAppTys` ts)
+   goCoercion' _ (Refl ty)          ts = mkId cat (ty `mkAppTys` ts)
+   goCoercion' _ (GRefl _ ty MRefl) ts = mkId cat (ty `mkAppTys` ts)
 
-   goCoercion' (AppCo co1 co2) ts | Just (t, _role) <- isReflCo_maybe co2
-     = goCoercion co1 (t : ts)
+   -- Symmetry and transitivity
+   goCoercion' pol (SymCo co) ts = goCoercion (not pol) co ts
+   goCoercion' pol (TransCo co1 co2) ts
+     = (if pol then id else flip) (mkCompose cat) (goCoercion' pol co2 ts) (goCoercion pol co1 ts)
 
-   goCoercion' (TransCo co1 co2) ts
-     = mkCompose cat (goCoercion' co2 ts) (goCoercion co1 ts)
+   -- Composition
+   goCoercion' pol (AppCo co1 co2) ts | Just (t, _role) <- isReflCo_maybe co2
+     = goCoercion pol co1 (t : ts)
 
-   -- nominal are a bit like the identity, only that we have to, well, cast the result
-   goCoercion' (SubCo co) ts
+   -- Nominal coercions are a bit like the identity, but we cast the resulting categorial arrow
+   goCoercion' pol (SubCo co) ts
      = mkCast out_exp out_co
      where
      Pair t1 t2 = coercionKind co
      out_exp = mkId cat (t1 `mkAppTys` ts)
-     out_co = mkSubCo (mkAppCos (mkReflCo Nominal cat) [mkReflCo Nominal t1, co])
+     out_co = (if pol then id else mkSymCo) $
+        mkSubCo (mkAppCos (mkReflCo Nominal cat) [mkReflCo Nominal t1, co])
 
    -- Newtype wrapper
-   -- This _might_ be a newtype, so lets see if mkReprC works
+   -- This is (very likely) a newtype, so lets see if mkReprC (or mkAbstC) works
    -- For now, the type arguments must not be coerced (usually there are none for newtypes)
-   goCoercion' co@(AxiomInstCo _ 0 cos) ts | all isReflCo cos
+   goCoercion' pol co@(AxiomInstCo _ 0 cos) ts | all isReflCo cos
     -- = mkReprC' cat (t1 `mkAppTys` ts)
     = fromMaybe (pprPanic "goCoercion AxiomInstCo: failed catOpMaybe" (ppr co)) $
-      catOpMaybe cat reprCV [t1 `mkAppTys` ts, t2 `mkAppTys` ts]
+      catOpMaybe cat (if pol then reprCV else abstCV) [t1 `mkAppTys` ts, t2 `mkAppTys` ts]
      where Pair t1 t2 = coercionKind co
 
-   -- So far, we only handle SymCo directly around a AxiomInstCo
-   -- If this is not enough we have to introduce a polarity argment
 
-   -- This is like above, but with mkAbstC instead of mkReprC
-   goCoercion' (SymCo (co@(AxiomInstCo _ 0 cos))) ts | all isReflCo cos
-    -- = mkAbstC' cat (t1 `mkAppTys` ts)
-    = fromMaybe (pprPanic "goCoercion AxiomInstCo: failed catOpMaybe" (ppr co)) $
-      catOpMaybe cat abstCV [t1 `mkAppTys` ts, t2 `mkAppTys` ts]
-     where Pair t1 t2 = coercionKind co
-
-   goCoercion' co@(FunCo Representational co1 co2) ts
+   goCoercion' pol co@(FunCo Representational co1 co2) ts
     | not (null ts)
     = pprPanic "goCoercion': oddly kinded FunCo" (ppr co $$ ppr ts)
 
    -- If we have "<t>_R -> co2", then we can use the Functor instance for "(->) t"
     | Just (ty1, _role) <- isReflCo_maybe co1
     = let h = mkTyConApp funTyCon [liftedRepTy, liftedRepTy, ty1]
-      in onDict (onDict (Var fmapV `mkTyApps` [cat, h, ty21, ty22])) `App` goCoercion co2 []
-    where Pair ty21 ty22 = coercionKind co2
+      in onDict (onDict (Var fmapV `mkTyApps` [cat, h, ty21, ty22])) `App` goCoercion pol co2 []
+    where Pair ty21 ty22 = (if pol then id else swap) $ coercionKind co2
 
-   goCoercion' co ts
-       | dtrace "goCoercion giving up, falling back to mkCoerceC" (ppr (co, t1, t2)) True
+   goCoercion' pol co ts
+       | dtrace "goCoercion giving up, falling back to mkCoerceC" (ppr co $$ ppr (coercionKind co)) True
        = mkCoerceC cat (t1 `mkAppTys` ts) (t2 `mkAppTys` ts)
-     where Pair t1 t2 = coercionKind co
+     where Pair t1 t2 = (if pol then id else swap) $ coercionKind co
 
 pattern Coerce :: Cat -> Type -> Type -> CoreExpr
 pattern Coerce k a b <-
