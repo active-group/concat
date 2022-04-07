@@ -767,6 +767,19 @@ ccc (CccEnv {..}) (Ops {..}) cat =
    goCoercion' pol (AppCo co1 co2) ts | Just (t, _role) <- isReflCo_maybe co2
      = goCoercion pol co1 (t : ts)
 
+   -- Coercion application: non-reflexive argument.
+   -- Must be a nominal coercion, so treat it similar to SubCo below, and use mkCast
+   goCoercion' pol (AppCo co1 co2) ts
+     = mkCast out_exp out_co
+     where
+     Pair t11 t12 = (if pol then id else swap) $ coercionKind co1
+     Pair t21 t22 = (if pol then id else swap) $ coercionKind co2
+     out_exp = goCoercion pol co1 (t21 : ts)
+     out_co = (if pol then id else mkSymCo) $ mkSubCo $
+        mkAppCos (mkReflCo Nominal cat)
+            [ mkReflCo Nominal (t11 `mkAppTys` (t21 : ts))
+            , mkAppCos (mkReflCo Nominal t12) (co2 : [ mkReflCo Nominal t | t <- ts ])
+            ]
 
    -- Nominal coercions are a bit like the identity, but we cast the resulting categorial arrow
    goCoercion' pol (SubCo co) ts
@@ -774,8 +787,8 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      where
      Pair t1 t2 = coercionKind co
      out_exp = mkId cat (t1 `mkAppTys` ts)
-     out_co = (if pol then id else mkSymCo) $
-        mkSubCo (mkAppCos (mkReflCo Nominal cat) [mkReflCo Nominal t1, co])
+     out_co = (if pol then id else mkSymCo) $ mkSubCo $
+        mkAppCos (mkReflCo Nominal cat) [mkReflCo Nominal t1, co]
 
    -- Newtype wrapper
    -- This is (very likely) a newtype, so lets see if mkReprC (or mkAbstC) works
