@@ -63,6 +63,7 @@ import CoreOpt (simpleOptExpr)
 #endif
 import TyCoRep
 import GHC.Classes
+import CoAxiom
 import Unique (mkBuiltinUnique)
 -- For normaliseType etc
 import FamInstEnv
@@ -811,18 +812,20 @@ ccc (CccEnv {..}) (Ops {..}) cat =
    --  co <Float> <Double> ; NDual <t1> <Double> <Float>
    --
    -- by looking at the RHS type of the newtype equation, and building a coercion from it
-   -- where we insert the argument coercinos instead of the type variables.
+   -- where we insert the argument coercinos instead of the type variables (using liftCoSubstWith).
    --
    -- This will probably loop for recursive newtypes (newtype Stream = MkS (Double, Stream))
    --
    -- TODO: think this through for pol = False
-   goCoercion' pol co@(AxiomInstCo ax 0 cos1@[c1,c2,c3]) ts
+   goCoercion' pol co@(AxiomInstCo ax 0 cos) ts
      = goCoercion pol (mkTransCo co1 co2) ts
      where
        co1 = AxiomInstCo ax 0 cos'
+       ax_branch = coAxiomNthBranch ax 0
        -- Experimental hack: Hardcoded for the Dual newtype’s RHS
-       co2 = mkAppCos c1 [c3,c2]
-       cos' = [ mkReflCo (coercionRole arg_co) (pFst (coercionKind arg_co)) | arg_co <- cos1 ]
+       --co2 = mkAppCos c1 [c3,c2]
+       co2 = liftCoSubstWith Representational (coAxBranchTyVars ax_branch) cos (coAxBranchRHS ax_branch)
+       cos' = [ mkReflCo (coercionRole arg_co) (pFst (coercionKind arg_co)) | arg_co <- cos ]
 
    goCoercion' pol co@(FunCo Representational co1 co2) ts
     | not (null ts)
@@ -835,8 +838,8 @@ ccc (CccEnv {..}) (Ops {..}) cat =
     where Pair ty21 ty22 = (if pol then id else swap) $ coercionKind co2
 
    goCoercion' pol co ts
-       | dtrace "goCoercion giving up, falling back to mkCoerceC" (ppr co $$ ppr (coercionKind co)) True
-       = mkCoerceC cat (t1 `mkAppTys` ts) (t2 `mkAppTys` ts)
+     = dtrace "goCoercion giving up, falling back to mkCoerceC" (ppr co $$ ppr (coercionKind co)) $
+       mkCoerceC cat (t1 `mkAppTys` ts) (t2 `mkAppTys` ts)
      where Pair t1 t2 = (if pol then id else swap) $ coercionKind co
 
 pattern Coerce :: Cat -> Type -> Type -> CoreExpr
