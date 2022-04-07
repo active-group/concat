@@ -120,6 +120,7 @@ data CccEnv = CccEnv { dtrace           :: forall a. String -> SDoc -> a -> a
                      , outerVecV        :: Id
                      , barbarbarbarV    :: Id
                      , astastastV       :: Id
+                     , sumACV           :: Id
                      , bottomTV         :: Id
                      , repTc            :: TyCon
                   -- , hasRepMeth       :: HasRepMeth
@@ -645,6 +646,14 @@ ccc (CccEnv {..}) (Ops {..}) cat =
         | v == astastastV
         , Just body' <- unfoldMaybe e
         -> Doing("lam *** unfold")
+           -- dtrace "lam fmap unfold" (ppr body') $
+           return (mkCcc (Lam x body'))
+
+     Trying("sumAC unfold")
+     e@(collectArgs -> (Var v, Type (isFunCat -> False) : _))
+        | v == sumACV
+        , Just body' <- unfoldMaybe e
+        -> Doing("lam sumAC unfold")
            -- dtrace "lam fmap unfold" (ppr body') $
            return (mkCcc (Lam x body'))
 
@@ -1690,6 +1699,7 @@ mkCccEnv opts = do
   outerVecV     <- findCatId "outerVecC"
   barbarbarbarV <- findCatId "||||"
   astastastV    <- findCatId "***"
+  sumACV        <- findCatId "sumAC"
   cccV          <- findCatId "toCcc'"
   cccPV         <- findCatId "toCcc''"
   uncccV        <- findCatId "unCcc'"
