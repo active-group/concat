@@ -801,14 +801,14 @@ ccc (CccEnv {..}) (Ops {..}) cat =
 
 
    -- If the a arguments are casted, e.g. the coercion is
-   --   NDual (co) <Double> <Double> :: Dual t1 Double Double ~ t2 Double Double
+   --   NDual (co) <Double> <Float> :: Dual t1 Double Float ~ t2 Float Double
    -- where co :: t1 ~ t2 is a non-refl coercion, we have a slight problem. We
    -- cannot create a categorical term that changes the first parameter of NDual
    -- (we'd need generalization of Functor that are univariant, and that for each type parameter)
    --
    -- So instead we de-normalize the coercion to
    --
-   --  co <Double> <Double> ; NDual <t1> <Double> <Double>
+   --  co <Float> <Double> ; NDual <t1> <Double> <Float>
    --
    -- by looking at the RHS type of the newtype equation, and building a coercion from it
    -- where we insert the argument coercinos instead of the type variables.
