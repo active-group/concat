@@ -62,8 +62,10 @@ import FamInstEnv (normaliseType)
 import CoreOpt (simpleOptExpr)
 #endif
 import TyCoRep
+import TyCoSubst (emptyTCvSubst)
 import GHC.Classes
 import CoAxiom
+import OptCoercion
 import Unique (mkBuiltinUnique)
 -- For normaliseType etc
 import FamInstEnv
@@ -286,10 +288,10 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      -- This version fails gracefully when we can't make the coercions.
      -- Then we can see further into the error.
      e@(Cast e' co@(coercionRole -> Representational))
-       | dtrace "found representational cast" (ppr (exprType e, exprType e', co)) False -> undefined
+       | dtrace "found representational cast" (ppr (exprType e, exprType e', co, coercionTag co, optimizeCoercion co)) False -> undefined
        -- | FunTy' a  b  <- exprType e
        -- | FunTy' a' b' <- exprType e'
-       | FunCo Representational co1 co2 <- co
+       | FunCo Representational co1 co2 <- optimizeCoercion co
        --, Just coA    <- mkCoerceC_maybe cat a a'
        --, Just coB    <- mkCoerceC_maybe cat b' b
        , let coA    = goCoercion True co1 [] -- a a'
@@ -955,6 +957,7 @@ data Ops = Ops
  , isPseudoApp    :: CoreExpr -> Bool
  , normType       :: Role -> Type -> (Coercion, Type)
  , okType         :: Type -> Bool
+ , optimizeCoercion :: Coercion -> Coercion
  }
 
 mkOps :: CccEnv -> ModGuts -> AnnEnv -> FamInstEnvs
@@ -1394,6 +1397,7 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
     where
       pseudoAnns :: Id -> [PseudoFun]
       pseudoAnns = findAnns deserializeWithData annotations . NamedTarget . varName
+   optimizeCoercion = optCoercion dflags emptyTCvSubst 
 
 substFriendly :: Bool -> CoreExpr -> Bool
 -- substFriendly catClosed rhs
