@@ -347,3 +347,15 @@ instance Matrix.Bump f => BumpCat (-+>) f where
 --   outerVecC v = AddFun (Matrix.outerVec v)
 --   {-# OPINLINE linearC #-}
 --   {-# OPINLINE outerVecC #-}
+
+instance
+  (Additive a,
+   AddCat (-+>) h a,
+   Additive (h a),
+   -- Additive a ==> Additive a :* a
+   Additive (Prod (-+>) a a), -- a :* a
+   Additive (h (Prod (-+>) a a)),
+   FunctorCat (-+>) h,
+   NumCat (-+>) a,
+   ZipCat (-+>) h) =>
+  InnerCat (-+>) h a
