@@ -2713,8 +2713,8 @@ instance Matrix.Transpose m => TransposeCat (->) m where
   {-# OPINLINE transposeC #-}
 
 class (Category k, Matrix.Bump b) => BumpCat k b where
-  bumpC :: (Ok k s, Num s) => b s `k` Matrix.BumpRep b s
-  unbumpC :: (Ok k s, Num s) => Matrix.BumpRep b s `k` b s
+  bumpC :: (Ok k s, Matrix.BumpConstraint b s) => b s `k` Matrix.BumpRep b s
+  unbumpC :: (Ok k s, Matrix.BumpConstraint b s) => Matrix.BumpRep b s `k` b s
 
 instance Matrix.Bump b => BumpCat (->) b where
   bumpC = IC.inline Matrix.bump

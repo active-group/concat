@@ -74,6 +74,7 @@ import GHC.TypeLits (KnownNat,natVal)
 import Data.Finite (Finite)
 import Data.Vector.Sized (Vector)
 
+import qualified ConCat.Matrix as Matrix
 import ConCat.Misc
   ( (:*),(:+),(:^),Binop, unzip,PseudoFun(..),oops,type (&&),type (&+&)
   , result, C1,C2,C3,C4,C5,C6, int )
@@ -891,8 +892,8 @@ Op1(outerVC, (Ok k s, MatrixMapCat k m, Num s) => Dim1 m s -> Dim2 m s `k` m s)
 Op1(linearMatC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => f1 s -> Matrix2 f2 f1 s `k` f2 s)
 Op1(linearVecC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => Matrix2 f2 f1 s -> f1 s `k` f2 s)
 Op1(outerVecC, (Ok k s, MatrixMapCat2 k f2 f1, Num s) => f1 s -> f2 s `k` Matrix2 f2 f1 s)
-Op0(bumpC, (Ok k s, BumpCat k b, Num s) => b s `k` BumpRep b s)
-Op0(unbumpC, (Ok k s, BumpCat k b, Num s) => BumpRep b s `k` b s)
+Op0(bumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => b s `k` BumpRep b s)
+Op0(unbumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => BumpRep b s `k` b s)
 Op0(transposeC, (Ok k s, TransposeCat k m) => m s `k` Transposed m s)
 
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)

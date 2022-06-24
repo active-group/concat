@@ -109,6 +109,7 @@ outerV  = (>.<)
 
 affineMat ::
   ( Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.MatrixMap2 f (Matrix.BumpRep b),
     Additive s,
     Num s
@@ -116,11 +117,12 @@ affineMat ::
   b s ->
   Matrix.Matrix2 f (Matrix.BumpRep b) s ->
   f s
-affineMat v = Matrix.linearMat (Matrix.bump v)
+affineMat v = Matrix.linearMat (Matrix.bump v)  
 {-# INLINE affineMat #-}
 
 affineVec ::
   ( Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.MatrixMap2 f (Matrix.BumpRep b),
     Additive s,
     Num s
@@ -133,6 +135,7 @@ affineVec m = Matrix.linearVec m . Matrix.bump
 
 affMatTanh ::
   ( Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.MatrixMap2 f (Matrix.BumpRep b),
     Additive s,
     Num s,
@@ -147,6 +150,7 @@ affMatTanh = ((.).(.)) tanhs affineMat
 
 affVecTanh ::
   ( Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.MatrixMap2 f (Matrix.BumpRep b),
     Additive s,
     Num s,
@@ -163,6 +167,7 @@ affVecTanh = ((.).(.)) tanhs affineMat
 affineP ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Additive s,
     Num s
@@ -175,6 +180,7 @@ affineP v = Matrix.linearP (Matrix.bump v)
 affineP' ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Additive s,
     Num s
@@ -188,6 +194,7 @@ affineP' m v = Matrix.linearP (Matrix.bump v) m
 affineX ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Additive s,
     Num s
@@ -229,6 +236,7 @@ tanhs = fmap tanh
 affReluP :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Functor (Matrix.Dim2 m),
     Additive s,
@@ -243,6 +251,7 @@ affReluP v = relus . affineP v
 affReluP' :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Functor (Matrix.Dim2 m),
     Additive s,
@@ -258,6 +267,7 @@ affReluP' = ((.).(.)) relus affineP'
 affReluX ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Functor (Matrix.Dim2 m),
     Additive s,
@@ -272,6 +282,7 @@ affReluX m = relus . affineX m
 affTanhP ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Functor (Matrix.Dim2 m),
     Additive s,
@@ -285,6 +296,7 @@ affTanhP v = tanhs . affineP v
 affTanhP' ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Functor (Matrix.Dim2 m),
     Additive s,
@@ -299,6 +311,7 @@ affTanhP' = ((.).(.)) tanhs affineP'
 affTanhX ::
   ( Matrix.MatrixMap m,
     Matrix.Bump b,
+    Matrix.BumpConstraint b s,
     Matrix.BumpRep b ~ Matrix.Dim1 m,
     Functor (Matrix.Dim2 m),
     Additive s,
