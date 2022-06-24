@@ -313,4 +313,7 @@ instance (Ok k (h a),
      Additive1 h,
      FunctorCat k h,
      Category k,
-     NumCat (Dual k) a) => InnerCat (Dual k) h a
+     BraidedPCat k,
+     ProductCat k
+     ) => InnerCat (Dual k) h a where
+      dotC = sumAC . fmapC jamP . zipC

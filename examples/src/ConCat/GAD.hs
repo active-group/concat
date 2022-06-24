@@ -449,3 +449,18 @@ instance MatrixMapCat2 k f2 f1 => MatrixMapCat2 (GD k) f2 f1 where
   {-# INLINE linearMatC #-}
   {-# INLINE linearVecC #-}
   {-# INLINE outerVecC #-}
+
+instance 
+  ( InnerCat k h a,
+    InnerCat (->) h a,
+    CoproductPCat k,
+    Ok k (Prod k (h a) (h a)),
+    Ok k (CoprodP k a a),
+    Ok k a,
+    Category k,
+    ProductCat k,
+    ConstCat k (h a),
+    Ok k (ConstObj k (h a)),
+    MonoidalPCat k
+  ) => InnerCat (GD k) h a where
+    dotC = D (dotC &&& \(x, y) -> jamP . (dotC . (const x &&& exr) &&& dotC . (exl &&& const y)))
