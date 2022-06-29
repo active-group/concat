@@ -317,3 +317,4 @@ instance (Ok k (h a),
      ProductCat k
      ) => InnerCat (Dual k) h a where
       dotC = sumAC . fmapC jamP . zipC
+      {-# INLINE dotC #-}

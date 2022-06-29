@@ -358,4 +358,6 @@ instance
    FunctorCat (-+>) h,
    NumCat (-+>) a,
    ZipCat (-+>) h) =>
-  InnerCat (-+>) h a
+  InnerCat (-+>) h a where
+    dotC = sumAC . fmapC mulC . zipC
+    {-# OPINLINE dotC #-}

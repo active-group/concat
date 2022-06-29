@@ -464,3 +464,4 @@ instance
     MonoidalPCat k
   ) => InnerCat (GD k) h a where
     dotC = D (dotC &&& \(x, y) -> jamP . (dotC . (const x &&& exr) &&& dotC . (exl &&& const y)))
+    {-# INLINE dotC #-}
