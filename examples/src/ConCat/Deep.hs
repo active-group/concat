@@ -34,7 +34,7 @@ import Data.NumInstances.Function ()
 
 import ConCat.Misc
 import ConCat.Additive
-import ConCat.AltCat  (Additive1(..),(<+), dotC)
+import ConCat.AltCat  (Additive1(..),(<+))
 -- import ConCat.Orphans (fstF, sndF)
 import ConCat.RAD     (gradR)
 
@@ -131,7 +131,7 @@ affine m = linear m . bump
 -- TODO: Is there an affine counterpart to linear'?
 
 normSqr :: (Foldable n, Zip n, Additive s, Num s) => n s -> s
-normSqr u  = dotC (u, u) -- u <.> u
+normSqr u  = u <.> u
 {-# INLINE normSqr #-}
 
 -- | Distance squared
