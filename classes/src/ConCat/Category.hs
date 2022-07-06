@@ -2725,4 +2725,3 @@ instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
   {-# OPINLINE linearMatC #-}
   {-# OPINLINE linearVecC #-}
   {-# OPINLINE outerVecC #-}
-
