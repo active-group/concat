@@ -324,8 +324,8 @@ instance (Foldable f, Zip f, Functor g) => MatrixMapCat (-+>) (g :.: f) where
   {-# OPINLINE outerVC #-}
 
 instance Matrix.Bump f => BumpCat (-+>) f where
-  bumpC = AddFun Matrix.bump
-  unbumpC = AddFun Matrix.unbump
+  bumpC = AddFun Category.bumpC
+  unbumpC = AddFun Category.unbumpC
   {-# OPINLINE bumpC #-}
   {-# OPINLINE unbumpC #-}
 
@@ -348,3 +348,17 @@ instance Matrix.Bump f => BumpCat (-+>) f where
 --   outerVecC v = AddFun (Matrix.outerVec v)
 --   {-# OPINLINE linearC #-}
 --   {-# OPINLINE outerVecC #-}
+
+instance
+  (Additive a,
+   AddCat (-+>) h a,
+   Additive (h a),
+   -- Additive a ==> Additive a :* a
+   Additive (Prod (-+>) a a), -- a :* a
+   Additive (h (Prod (-+>) a a)),
+   FunctorCat (-+>) h,
+   NumCat (-+>) a,
+   ZipCat (-+>) h) =>
+  InnerCat (-+>) h a where
+    dotC = sumAC . fmapC mulC . zipC
+    {-# OPINLINE dotC #-}

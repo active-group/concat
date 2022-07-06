@@ -11,7 +11,7 @@ import qualified Data.Vector.Sized as Vector
 import GHC.Generics ((:.:) (..))
 import Data.Distributive (Distributive (..))
 import Data.List.Extra (snoc)
-import Data.Kind (Type)
+import Data.Kind (Constraint, Type)
 import qualified ConCat.Zip as Zip
 import ConCat.Additive (Additive, sumA)
 import GHC.TypeLits
@@ -29,8 +29,9 @@ class Transpose m where
 
 class Bump b where
   type BumpRep b :: Type -> Type
-  bump :: Num s => b s -> BumpRep b s
-  unbump :: Num s => BumpRep b s -> b s
+  type BumpConstraint b :: Type -> Constraint
+  bump :: BumpConstraint b s => b s -> BumpRep b s
+  unbump :: BumpConstraint b s => BumpRep b s -> b s
 
 instance (Foldable f, Zip.Zip f, Functor g) => MatrixMap (g :.: f) where
   type Dim1 (g :.: f) = f
@@ -58,11 +59,13 @@ instance {-# OVERLAPPING #-} Transpose ([] :.: []) where
 
 instance Bump (Vector.Vector n) where
   type BumpRep (Vector.Vector n) = Vector.Vector (n + 1)
+  type BumpConstraint (Vector.Vector n) = Num
   bump = (`Vector.snoc` 1)
   unbump = Vector.init
 
 instance Bump [] where
   type BumpRep [] = []
+  type BumpConstraint [] = Num
   bump = (`snoc` 1)
   unbump = init
 

@@ -2075,6 +2075,22 @@ class ({- Pointed h, -} OkFunctor k h, Ok k a) => PointedCat k h a where
 class (Ok k a, Additive a) => AddCat k h a where
   sumAC :: h a `k` a
 
+class InnerCat k h a where
+  dotC :: Prod k (h a) (h a) `k` a
+  default dotC ::
+    (Ok k (h a),
+     Ok k (h a :* h a),
+     Ok k a,
+     Ok k (a :* a),
+     --Ok k (Prod k a a), -- == Ok k (a :* a)
+     Ok k (h (Prod k a a)), -- Ok k (h (a :* a))
+     AddCat k h a,
+     FunctorCat k h,
+     Category k,
+     NumCat k a,
+     ZipCat k h) => Prod k (h a) (h a) `k` a
+  dotC = sumAC . fmapC mulC . zipC
+
 -- class IxSummable n => IxSummableCat k n where
 --   ixSumC ::  (Ok k a, Additive a) => (a :^ n) `k` a
 
@@ -2704,8 +2720,8 @@ instance Matrix.Transpose m => TransposeCat (->) m where
   {-# OPINLINE transposeC #-}
 
 class (Category k, Matrix.Bump b) => BumpCat k b where
-  bumpC :: (Ok k s, Num s) => b s `k` Matrix.BumpRep b s
-  unbumpC :: (Ok k s, Num s) => Matrix.BumpRep b s `k` b s
+  bumpC :: (Ok k s, Matrix.BumpConstraint b s) => b s `k` Matrix.BumpRep b s
+  unbumpC :: (Ok k s, Matrix.BumpConstraint b s) => Matrix.BumpRep b s `k` b s
 
 instance Matrix.Bump b => BumpCat (->) b where
   bumpC = IC.inline Matrix.bump
@@ -2725,3 +2741,5 @@ instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
   {-# OPINLINE linearMatC #-}
   {-# OPINLINE linearVecC #-}
   {-# OPINLINE outerVecC #-}
+
+instance (Foldable h, Zip h, Additive a, Num a) => InnerCat (->) h a
