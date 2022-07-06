@@ -300,22 +300,3 @@ instance
     {-# INLINE linearMatC #-}
     {-# INLINE linearVecC #-}
     {-# INLINE outerVecC #-}
-
-instance (Ok k (h a),
-     Ok k (h a :* h a),
-     Ok k a,
-     Ok k (a :* a),
-     Ok k (h (Prod (Dual k) a a)),
-     Additive a,
-     Additive (h a),
-     Additive (h (Prod (Dual k) a a)),
-     PointedCat k h a,
-     ZipCat k h,
-     Additive1 h,
-     FunctorCat k h,
-     Category k,
-     BraidedPCat k,
-     ProductCat k
-     ) => InnerCat (Dual k) h a where
-      dotC = sumAC . fmapC jamP . zipC
-      {-# INLINE dotC #-}

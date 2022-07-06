@@ -112,7 +112,7 @@ import ConCat.Category
   , OpCon(..),Sat(..) -- ,FunctorC(..)
   , yes1, forkCon, joinCon, inForkCon
   -- Functor-level. To be removed.
-  , OkFunctor(..),FunctorCat,Strong,ZipCat,ZapCat,PointedCat{-,SumCat-},AddCat,InnerCat
+  , OkFunctor(..),FunctorCat,Strong,ZipCat,ZapCat,PointedCat{-,SumCat-},AddCat
   , TraversableCat,DistributiveCat,RepresentableCat
   , MinMaxFunctorCat, MinMaxFFunctorCat
   , FiniteCat
@@ -882,7 +882,6 @@ Op0(zipC    , (ZipCat k h    , Ok2 k a b) => (h a :* h b) `k` h (a :* b))
 Op0(strength, (Strong k h    , Ok2 k a b) => (a :* h b) `k` h (a :* b))
 Op0(pointC  , (PointedCat k h a)          => a `k` h a)
 Op0(sumAC   , (AddCat k h a)              => h a `k` a)
-Op0(dotC    , (InnerCat k h a)            => Prod k (h a) (h a) `k` a)
 Op0(minimumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(maximumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))

@@ -2075,22 +2075,6 @@ class ({- Pointed h, -} OkFunctor k h, Ok k a) => PointedCat k h a where
 class (Ok k a, Additive a) => AddCat k h a where
   sumAC :: h a `k` a
 
-class InnerCat k h a where
-  dotC :: Prod k (h a) (h a) `k` a
-  default dotC ::
-    (Ok k (h a),
-     Ok k (h a :* h a),
-     Ok k a,
-     Ok k (a :* a),
-     --Ok k (Prod k a a), -- == Ok k (a :* a)
-     Ok k (h (Prod k a a)), -- Ok k (h (a :* a))
-     AddCat k h a,
-     FunctorCat k h,
-     Category k,
-     NumCat k a,
-     ZipCat k h) => Prod k (h a) (h a) `k` a
-  dotC = sumAC . fmapC mulC . zipC
-
 -- class IxSummable n => IxSummableCat k n where
 --   ixSumC ::  (Ok k a, Additive a) => (a :^ n) `k` a
 
@@ -2742,4 +2726,3 @@ instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
   {-# OPINLINE linearVecC #-}
   {-# OPINLINE outerVecC #-}
 
-instance (Foldable h, Zip h, Additive a, Num a) => InnerCat (->) h a
