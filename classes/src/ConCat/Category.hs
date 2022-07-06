@@ -2269,11 +2269,16 @@ class OkIxProd k h where
 
 class (Category k, OkIxProd k h) => IxMonoidalPCat k h where
   crossF :: forall a b. Ok2 k a b => h (a `k` b) -> (h a `k` h b)
+  -- variant of crossF that avoids functor-of-morphisms
+  crossF2 :: forall a b c. Ok3 k a b c => (c -> (a `k` b)) -> h c -> (h a `k` h b)
+  default crossF2 :: forall a b c. (Ok3 k a b c, Functor h) => (c -> (a `k` b)) -> h c -> (h a `k` h b)
+  crossF2 f h = crossF (fmapC f h)
 
 class IxMonoidalPCat k h => IxProductCat k h where
   exF    :: forall a  . Ok  k a   => h (h a `k` a)
   forkF  :: forall a b. Ok2 k a b => h (a `k` b) -> (a `k` h b)
   replF  :: forall a  . Ok  k a   => a `k` h a
+                                              
   -- Defaults
   forkF fs = crossF fs . replF <+ okIxProd @k @h @a <+ okIxProd @k @h @b
   default replF :: forall a . (Pointed h, Ok k a) => a `k` h a
@@ -2329,6 +2334,7 @@ instance Zip h => IxMonoidalPCat (->) h where
   -- crossF = zipWith id -- 2018-02-07 notes
   -- This generates better output code for re-transformation:
   crossF = curry (fmap (uncurry id) . (uncurry zip))
+  crossF2 f x = fmap (uncurry f) . zip x
   {-# OPINLINE crossF #-}
 
 instance (Representable h, Zip h, Pointed h) => IxProductCat (->) h where
@@ -2351,6 +2357,7 @@ instance OkIxProd U2 h where
 
 instance IxMonoidalPCat U2 h where
   crossF = const U2
+  crossF2 _ = const U2
 
 instance Pointed h => IxProductCat U2 h where
   exF    = point U2

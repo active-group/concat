@@ -119,6 +119,7 @@ instance (OkIxProd k h, Additive1 h) => OkIxProd (Dual k) h where
 
 instance (IxMonoidalPCat k h, Functor h, Additive1 h) => IxMonoidalPCat (Dual k) h where
   crossF = inAbstF1 crossF -- plusPF
+  crossF2 f x = abst (crossF2 (fmap repr f) x)
   {-# INLINE crossF #-}
 
 instance (IxCoproductPCat k h, Functor h, Additive1 h) => IxProductCat (Dual k) h where
