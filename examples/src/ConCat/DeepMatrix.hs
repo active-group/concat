@@ -33,10 +33,10 @@ import GHC.Generics (Par1(..),(:*:)(..),(:.:)(..))
 import Data.Key
 import Data.NumInstances.Function ()
 
+import qualified ConCat.AltCat as AltCat
+
 import ConCat.Misc
 import ConCat.Additive
-import ConCat.AltCat  (Additive1(..),(<+))
-import qualified ConCat.AltCat as AltCat
 -- import ConCat.Orphans (fstF, sndF)
 import ConCat.RAD     (gradR)
 import qualified ConCat.Matrix as Matrix
@@ -146,7 +146,7 @@ affMatTanh ::
   Matrix.Matrix2 f (Matrix.BumpRep b) s ->
   f s
 affMatTanh = ((.).(.)) tanhs affineMat
-{-# affMatTanh #-}
+{-# INLINE affMatTanh #-}
 
 affVecTanh ::
   ( Matrix.Bump b,
@@ -161,7 +161,7 @@ affVecTanh ::
   Matrix.Matrix2 f (Matrix.BumpRep b) s ->
   f s
 affVecTanh = ((.).(.)) tanhs affineMat
-{-# affVecTanh #-}
+{-# INLINE affVecTanh #-}
 
 -- | Affine application
 affineP ::
@@ -231,6 +231,7 @@ relus = fmap (max 0)
 
 tanhs :: (Functor f, Floating a) => Unop (f a)
 tanhs = fmap tanh
+{-# INLINE tanhs #-}
 
 -- | Affine followed by RELUs.
 affReluP :: -- (Foldable a, Zip a, Functor b, Ord s, Additive s, Num s)
