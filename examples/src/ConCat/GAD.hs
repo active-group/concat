@@ -44,6 +44,7 @@ import ConCat.Misc ((:*),type (&&),type (&+&),cond,result,unzip,sqr,bottom)
 import ConCat.Additive
 import ConCat.AltCat
 import ConCat.Rep
+import qualified ConCat.Matrix as Matrix
 
 import qualified ConCat.Inline.ClassOp as IC
 
@@ -444,11 +445,23 @@ instance BumpCat k m => BumpCat (GD k) m where
   {-# INLINE bumpC #-}
   {-# INLINE unbumpC #-}
 
-instance MatrixMapCat2 k f2 f1 => MatrixMapCat2 (GD k) f2 f1 where
-  -- using IC.inline here makes linting from the plugin fail
-  linearMatC v = linearD (linearMatC v) (linearMatC v)
-  linearVecC v = linearD (linearVecC v) (linearVecC v)
-  outerVecC v = linearD (outerVecC v) (outerVecC v)
-  {-# INLINE linearMatC #-}
-  {-# INLINE linearVecC #-}
-  {-# INLINE outerVecC #-}
+instance 
+  ( MatrixMapCat2 k f2 f1,
+    CoproductPCat k,
+    ProductCat k,
+    MonoidalPCat k,
+    OkFunctor k f1, 
+    OkFunctor k f2,
+    OkFunctor k (Matrix.Matrix2 f2 f1),
+    OkProd k,
+    OkCoprodP k
+  ) => MatrixMapCat2 (GD k) f2 f1 where
+    -- using IC.inline here makes linting from the plugin fail
+    linearMatC v = linearD (linearMatC v) (linearMatC v)
+    linearVecC m = linearD (linearVecC m) (linearVecC m)
+    outerVecC v = linearD (outerVecC v) (outerVecC v)
+    linearBothC = D (linearBothC &&& \(v, m) -> jamP . ((linearVecC m . exl) &&& (linearMatC v . exr)))
+    {-# INLINE linearMatC #-}
+    {-# INLINE linearVecC #-}
+    {-# INLINE outerVecC #-}
+    {-# INLINE linearBothC #-}

@@ -578,6 +578,8 @@ instance MatrixMap2 f2 f1 => MatrixMapCat2 Syn f2 f1 where
   linearMatC _ = app0 "linearMatC"
   linearVecC _ = app0 "linearVecC"
   outerVecC _ = app0 "outerVecC"
+  linearBothC = app0 "linearBothC"
   INLINER(linearMatC)
   INLINER(linearVecC)
   INLINER(outerVecC)
+  INLINER(linearBothC)

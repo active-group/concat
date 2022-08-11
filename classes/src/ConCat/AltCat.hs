@@ -108,7 +108,7 @@ import ConCat.Category
   -- , Arr, ArrayCat
   , TransitiveCon(..)
   , U2(..), (:**:)(..)
-  , type (|-)(..), (<+), OkProd,okProd, OkCoprod,okCoprod, OkExp, okExp
+  , type (|-)(..), (<+), OkProd,okProd, OkCoprod,okCoprod, OkCoprodP,okCoprodP, OkExp, okExp
   , OpCon(..),Sat(..) -- ,FunctorC(..)
   , yes1, forkCon, joinCon, inForkCon
   -- Functor-level. To be removed.
@@ -128,7 +128,7 @@ import ConCat.Matrix
   ( MatrixMap (linearP, linearX, outerV)
   , Dim1
   , Dim2
-  , MatrixMap2 (linearMat, linearVec, outerVec)
+  , MatrixMap2 (linearMat, linearVec, outerVec, linearBoth)
   , Matrix2
   , Transpose (transpose)
   , Transposed
@@ -892,6 +892,7 @@ Op1(outerVC, (Ok k s, MatrixMapCat k m, Num s) => Dim1 m s -> Dim2 m s `k` m s)
 Op1(linearMatC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => f1 s -> Matrix2 f2 f1 s `k` f2 s)
 Op1(linearVecC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => Matrix2 f2 f1 s -> f1 s `k` f2 s)
 Op1(outerVecC, (Ok k s, MatrixMapCat2 k f2 f1, Num s) => f1 s -> f2 s `k` Matrix2 f2 f1 s)
+Op0(linearBothC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => (f1 s :* Matrix2 f2 f1 s) `k` f2 s)
 Op0(bumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => b s `k` BumpRep b s)
 Op0(unbumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => BumpRep b s `k` b s)
 Op0(transposeC, (Ok k s, TransposeCat k m) => m s `k` Transposed m s)
@@ -914,6 +915,7 @@ Catify(MatrixMap.linearX, linearXC)
 Catify(linearMat, linearMatC)
 Catify(linearVec, linearVecC)
 Catify(outerVec, outerVecC)
+Catify(linearBoth, linearBothC)
 Catify(bump, bumpC)
 Catify(unbump, unbumpC)
 Catify(transpose, transposeC)
