@@ -334,9 +334,6 @@ instance
   , Additive1 f1
   , Additive1 f2
   , Additive1 (Matrix.Matrix2 f2 f1)
-  , Additive (f1 s)
-  , Additive (f2 s)
-  , Additive (Matrix.Matrix2 f2 f1 s)
   ) => MatrixMapCat2 (-+>) f2 f1 where
   linearMatC v = AddFun (Matrix.linearMat v)
   linearVecC m = AddFun (Matrix.linearVec m)
