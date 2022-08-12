@@ -2713,11 +2713,46 @@ instance Matrix.Bump b => BumpCat (->) b where
   {-# OPINLINE bumpC #-}
   {-# OPINLINE unbumpC #-}
 
-class (Matrix.MatrixMap2 f2 f1, Category k) => MatrixMapCat2 k f2 f1 where
+class
+  ( Matrix.MatrixMap2 f2 f1
+  , Category k
+  , ProductCat k
+  , MonoidalPCat k
+  , OkFunctor k f1
+  , OkFunctor k f2
+  , OkFunctor k (Matrix.Matrix2 f2 f1)
+  ) => MatrixMapCat2 k f2 f1 where
   linearMatC :: (Ok k s, Additive s, Num s) => f1 s -> Matrix.Matrix2 f2 f1 s `k` f2 s
+  linearMatC v =
+    linearBothC . ((const v) &&& id)
+    <+ okProd @k @(ConstObj k (f1 s)) @(Matrix.Matrix2 f2 f1 s)
+    <+ okFunctor @k @f1 @s
+    <+ okFunctor @k @f2 @s
+    <+ okFunctor @k @(Matrix.Matrix2 f2 f1) @s
+  default linearMatC ::
+    forall s.
+    ( Ok k s
+    , Additive s
+    , Num s
+    , ConstCat k (f1 s)
+    ) => f1 s -> Matrix.Matrix2 f2 f1 s `k` f2 s
   linearVecC :: (Ok k s, Additive s, Num s) => Matrix.Matrix2 f2 f1 s -> f1 s `k` f2 s
+  linearVecC m =
+    linearBothC . (id &&& (const m))
+    <+ okProd @k @(f1 s) @(ConstObj k (Matrix.Matrix2 f2 f1 s))
+    <+ okFunctor @k @f1 @s
+    <+ okFunctor @k @f2 @s
+    <+ okFunctor @k @(Matrix.Matrix2 f2 f1) @s
+  default linearVecC ::
+    forall s.
+    ( Ok k s
+    , Additive s
+    , Num s
+    , ConstCat k (Matrix.Matrix2 f2 f1 s)
+    ) => Matrix.Matrix2 f2 f1 s -> f1 s `k` f2 s
   outerVecC :: (Ok k s, Num s) => f1 s -> f2 s `k` Matrix.Matrix2 f2 f1 s
   linearBothC :: (Ok k s, Additive s, Num s) => (f1 s :* Matrix.Matrix2 f2 f1 s) `k` f2 s
+  {-# MINIMAL linearBothC, outerVecC #-}
 
 instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
   linearMatC v = IC.inline (Matrix.linearMat v)
