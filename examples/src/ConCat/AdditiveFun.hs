@@ -346,14 +346,3 @@ instance
   {-# OPINLINE linearVecC #-}
   {-# OPINLINE outerVecC #-}
   {-# OPINLINE linearBothC #-}
-
-instance (KnownNat m, KnownNat n) => MatrixMapCat2 (-+>) (Vector m) (Vector n) where
-  linearMatC v = AddFun (Matrix.linearMat v)
-  linearVecC m = AddFun (Matrix.linearVec m)
-  outerVecC v = AddFun (Matrix.outerVec v)
-  linearBothC = AddFun Matrix.linearBoth
-  {-# OPINLINE linearMatC #-}
-  {-# OPINLINE linearVecC #-}
-  {-# OPINLINE outerVecC #-}
-  {-# OPINLINE linearBothC #-}
-
