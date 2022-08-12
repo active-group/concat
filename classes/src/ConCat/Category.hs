@@ -2713,24 +2713,11 @@ instance Matrix.Bump b => BumpCat (->) b where
   {-# OPINLINE bumpC #-}
   {-# OPINLINE unbumpC #-}
 
-class 
-  ( Matrix.MatrixMap2 f2 f1, 
-    Category k
-    -- OkFunctor k f1, 
-    -- OkFunctor k f2,
-    -- OkFunctor k (Matrix.Matrix2 f2 f1),
-    -- OkProd k,
-    -- OkCoprodP k
-  ) => MatrixMapCat2 k f2 f1 where
-    linearMatC :: (Ok k s, Additive s, Num s) => f1 s -> Matrix.Matrix2 f2 f1 s `k` f2 s
-    linearVecC :: (Ok k s, Additive s, Num s) => Matrix.Matrix2 f2 f1 s -> f1 s `k` f2 s
-    outerVecC :: (Ok k s, Num s) => f1 s -> f2 s `k` Matrix.Matrix2 f2 f1 s
-    linearBothC :: 
-      ( Ok k s, 
-        Additive s, 
-        Num s
-      ) => (f1 s :* Matrix.Matrix2 f2 f1 s) `k` f2 s
-    {-# MINIMAL linearMatC, linearVecC, outerVecC #-}
+class (Matrix.MatrixMap2 f2 f1, Category k) => MatrixMapCat2 k f2 f1 where
+  linearMatC :: (Ok k s, Additive s, Num s) => f1 s -> Matrix.Matrix2 f2 f1 s `k` f2 s
+  linearVecC :: (Ok k s, Additive s, Num s) => Matrix.Matrix2 f2 f1 s -> f1 s `k` f2 s
+  outerVecC :: (Ok k s, Num s) => f1 s -> f2 s `k` Matrix.Matrix2 f2 f1 s
+  linearBothC :: (Ok k s, Additive s, Num s) => (f1 s :* Matrix.Matrix2 f2 f1 s) `k` f2 s
 
 instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
   linearMatC v = IC.inline (Matrix.linearMat v)

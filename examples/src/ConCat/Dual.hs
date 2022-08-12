@@ -297,6 +297,8 @@ instance
     linearMatC v = Dual (outerVecC v)
     linearVecC m = Dual (linearVecC (transposeC m))
     outerVecC v = Dual (linearMatC v)
+    linearBothC = Dual undefined -- FIXME(Bianca)
     {-# INLINE linearMatC #-}
     {-# INLINE linearVecC #-}
     {-# INLINE outerVecC #-}
+    {-# INLINE linearBothC #-}
