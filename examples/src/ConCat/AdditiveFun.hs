@@ -347,17 +347,13 @@ instance
   {-# OPINLINE outerVecC #-}
   {-# OPINLINE linearBothC #-}
 
--- instance KnownNat n => MatrixMapCat2 (-+>) (Vector m) (Vector n) where
---   linearC ::
---     forall m n s.
---     (Ok (-+>) s, KnownNat n, Additive s, Num s) =>
---     Vector n s -> Matrix.Matrix2 (Vector m) (Vector n) s -+> Vector m s
---   linearC v = AddFun (Matrix.linear v)
---   outerVecC ::
---     forall m n s.
---     (Ok (-+>) s, KnownNat n, Num s) =>
---     Vector n s -> Vector m s -+> Matrix.Matrix2 (Vector m) (Vector n) s
---   outerVecC v = AddFun (Matrix.outerVec v)
---   {-# OPINLINE linearC #-}
---   {-# OPINLINE outerVecC #-}
+instance (KnownNat m, KnownNat n) => MatrixMapCat2 (-+>) (Vector m) (Vector n) where
+  linearMatC v = AddFun (Matrix.linearMat v)
+  linearVecC m = AddFun (Matrix.linearVec m)
+  outerVecC v = AddFun (Matrix.outerVec v)
+  linearBothC = AddFun Matrix.linearBoth
+  {-# OPINLINE linearMatC #-}
+  {-# OPINLINE linearVecC #-}
+  {-# OPINLINE outerVecC #-}
+  {-# OPINLINE linearBothC #-}
 
