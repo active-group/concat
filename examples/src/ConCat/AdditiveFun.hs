@@ -329,11 +329,23 @@ instance Matrix.Bump f => BumpCat (-+>) f where
   {-# OPINLINE bumpC #-}
   {-# OPINLINE unbumpC #-}
 
--- instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (-+>) f2 f1 where
---   linearC v = AddFun (Matrix.linear v)
---   outerVecC v = AddFun (Matrix.outerVec v)
---   {-# OPINLINE linearC #-}
---   {-# OPINLINE outerVecC #-}
+instance
+  ( Matrix.MatrixMap2 f2 f1
+  , Additive1 f1
+  , Additive1 f2
+  , Additive1 (Matrix.Matrix2 f2 f1)
+  , Additive (f1 s)
+  , Additive (f2 s)
+  , Additive (Matrix.Matrix2 f2 f1 s)
+  ) => MatrixMapCat2 (-+>) f2 f1 where
+  linearMatC v = AddFun (Matrix.linearMat v)
+  linearVecC m = AddFun (Matrix.linearVec m)
+  outerVecC v = AddFun (Matrix.outerVec v)
+  linearBothC = AddFun Matrix.linearBoth
+  {-# OPINLINE linearMatC #-}
+  {-# OPINLINE linearVecC #-}
+  {-# OPINLINE outerVecC #-}
+  {-# OPINLINE linearBothC #-}
 
 -- instance KnownNat n => MatrixMapCat2 (-+>) (Vector m) (Vector n) where
 --   linearC ::
