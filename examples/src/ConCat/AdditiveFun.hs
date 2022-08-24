@@ -336,8 +336,19 @@ instance
   , Additive1 (Matrix.Matrix2 f2 f1)
   ) => MatrixMapCat2 (-+>) f2 f1 where
   linearMatC v = AddFun (Matrix.linearMat v)
-  linearVecC m = AddFun (Matrix.linearVec m)
+  linearVecC ::
+    forall s.
+    ( Ok (-+>) s
+    , Additive s
+    , Num s
+    ) => Matrix.Matrix2 f2 f1 s -> (f1 s -+> f2 s)
+  linearVecC m =
+    linearBothC . (id &&& (const m))
+    <+ okFunctor @(-+>) @f1 @s
+    <+ okFunctor @(-+>) @f2 @s
+    <+ okFunctor @(-+>) @(Matrix.Matrix2 f2 f1) @s
   outerVecC v = AddFun (Matrix.outerVec v)
+  outerBothC = AddFun (uncurry Matrix.outerVec)
   linearBothC = AddFun Matrix.linearBoth
   {-# OPINLINE linearMatC #-}
   {-# OPINLINE linearVecC #-}

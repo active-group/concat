@@ -2751,13 +2751,23 @@ class
     , ConstCat k (Matrix.Matrix2 f2 f1 s)
     ) => Matrix.Matrix2 f2 f1 s -> f1 s `k` f2 s
   outerVecC :: (Ok k s, Num s) => f1 s -> f2 s `k` Matrix.Matrix2 f2 f1 s
+  default outerVecC ::
+    forall s.(Ok k s, Num s, ConstCat k (f1 s)) => f1 s -> f2 s `k` Matrix.Matrix2 f2 f1 s
+  outerVecC v =
+    outerBothC . (const v &&& id)
+    <+ okProd @k @(f1 s) @(f2 s)
+    <+ okFunctor @k @f1 @s
+    <+ okFunctor @k @f2 @s
+    <+ okFunctor @k @(Matrix.Matrix2 f2 f1) @s
+  outerBothC :: (Ok k s, Num s) => (f1 s :* f2 s) `k` Matrix.Matrix2 f2 f1 s
   linearBothC :: (Ok k s, Additive s, Num s) => (f1 s :* Matrix.Matrix2 f2 f1 s) `k` f2 s
   {-# MINIMAL linearBothC, outerVecC #-}
 
 instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
-  linearMatC v = IC.inline (Matrix.linearMat v)
+  linearMatC v = IC.inline (Matrix.linearMat v) -- FIXME: express in terms of linearBoth?
   linearVecC m = IC.inline (Matrix.linearVec m)
   outerVecC v = IC.inline (Matrix.outerVec v)
+  outerBothC = IC.inline (uncurry Matrix.outerVec)
   linearBothC = IC.inline Matrix.linearBoth
   {-# OPINLINE linearMatC #-}
   {-# OPINLINE linearVecC #-}

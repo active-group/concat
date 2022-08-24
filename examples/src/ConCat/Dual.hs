@@ -22,7 +22,7 @@ AbsTyPragmas
 
 module ConCat.Dual where
 
-import Prelude hiding (id,(.),zip,unzip,zipWith,const)
+import Prelude hiding (id,(.),zip,unzip,zipWith,const,curry)
 import qualified Prelude as P
 
 import Data.Constraint (Dict(..),(:-)(..))
@@ -298,11 +298,14 @@ instance
   , Additive1 (Matrix.Matrix2 f2 f1)
   ) => 
   MatrixMapCat2 (Dual k) f2 f1 where
+    linearMatC :: forall s . (Ok k s, Additive s, Num s) => f1 s -> Dual k (Matrix.Matrix2 f2 f1 s) (f2 s)
     linearMatC v = Dual (outerVecC v)
     linearVecC m = Dual (linearVecC (transposeC m))
     outerVecC v = Dual (linearMatC v)
     linearBothC = error "linearBothC is not linear"
+    outerBothC = error "outerBothC is not linear"
     {-# INLINE linearMatC #-}
     {-# INLINE linearVecC #-}
     {-# INLINE outerVecC #-}
+    {-# INLINE outerBothC #-}
     {-# INLINE linearBothC #-}

@@ -459,7 +459,7 @@ instance
     -- using IC.inline here makes linting from the plugin fail
     linearMatC v = linearD (linearMatC v) (linearMatC v)
     linearVecC m = linearD (linearVecC m) (linearVecC m)
-    outerVecC v = linearD (outerVecC v) (outerVecC v)
+    outerVecC = error "Mike was too lazy to do this"
     linearBothC :: forall s. (Ok (GD k) s, Additive s, Num s) => GD k (f1 s :* Matrix.Matrix2 f2 f1 s) (f2 s)
     linearBothC =
       D (linearBothC &&& \(v, m) -> jamP . ((linearVecC m . exl) &&& (linearMatC v . exr)))
