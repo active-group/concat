@@ -37,6 +37,7 @@ import Data.Pointed
 import Data.Functor.Rep (Representable(..))
 import Data.Vector.Sized (Vector)
 import Data.Finite.Internal
+import Type.Reflection
 
 import ConCat.Misc
 import ConCat.Rep (HasRep(abst),inAbst,inAbst2)
@@ -44,7 +45,13 @@ import qualified ConCat.Rep
 import ConCat.Orphans ()
 
 -- | Commutative monoid intended to be used with a multiplicative monoid
-class Additive a where
+
+-- The Typeable is a hack to enable implementations
+-- of Additive1 that can't deal with arbitrary functor
+-- args - as is the case on GPUs, for example.
+-- With Typeable, we can implement Additive1 such that
+-- it dispatches at runtime on the functor arg.
+class Typeable a => Additive a where
   zero  :: a
   infixl 6 ^+^
   (^+^) :: a -> a -> a
@@ -96,7 +103,7 @@ ScalarType(Word32)
 ScalarType(Word64)
 ScalarType(Word8)
 
-instance Integral a => Additive (Ratio a) where
+instance (Typeable a, Integral a) => Additive (Ratio a) where
   zero  = 0
   (^+^) = (+)
 
@@ -130,7 +137,7 @@ instance KnownNat n => Additive (Finite n) where
 
 #if 1
 
-#define AdditiveFunctor(f) instance (AddF (f), Additive v) => Additive ((f) v)
+#define AdditiveFunctor(f) instance (AddF (f), Additive v, Typeable ((f) v)) => Additive ((f) v)
 
 AdditiveFunctor((->) a)
 AdditiveFunctor(Sum)

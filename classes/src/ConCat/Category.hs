@@ -2528,13 +2528,14 @@ instance (IxCoproductCat k n, IxCoproductCat k' n) => IxCoproductCat (k :**: k')
 -- Functor additivity
 class Additive1 h where additive1 :: Sat Additive a |- Sat Additive (h a)
 
-instance Additive1 ((->) a) where additive1 = Entail (Sub Dict)
+instance Typeable a => Additive1 ((->) a) where additive1 = Entail (Sub Dict)
 instance Additive1 Sum      where additive1 = Entail (Sub Dict)
 instance Additive1 Product  where additive1 = Entail (Sub Dict)
 instance Additive1 U1       where additive1 = Entail (Sub Dict)
 instance Additive1 Par1     where additive1 = Entail (Sub Dict)
-instance (AddF f, AddF g) => Additive1 (f :*: g)  where additive1 = Entail (Sub Dict)
-instance (AddF f, AddF g) => Additive1 (g :.: f)  where additive1 = Entail (Sub Dict)
+instance (Typeable f, Typeable g, AddF f, AddF g) => Additive1 (f :*: g)  where
+  additive1 = Entail (Sub Dict)
+instance (Typeable f, Typeable g, AddF f, AddF g) => Additive1 (g :.: f)  where additive1 = Entail (Sub Dict)
 instance KnownNat n       => Additive1 (Vector n) where additive1 = Entail (Sub Dict)
 
 -- TODO: move Additive1 elsewhere

@@ -19,6 +19,7 @@ module ConCat.Free.Affine where
 
 import Prelude hiding (id,(.),curry,uncurry,const)
 import Data.Key (Zip(..))
+import Type.Reflection
 
 import ConCat.Misc ((:*))
 import ConCat.Rep
@@ -48,7 +49,7 @@ instance HasRep (Affine s a b) where
 
 AbsTy(Affine s a b)
 
-instance Ok2 (L s) a b => Additive (Affine s a b) where
+instance (Ok2 (L s) a b, Typeable s) => Additive (Affine s a b) where
   zero = linearA zeroLM
   Affine p u ^+^ Affine q v = Affine (p `addLM` q) (add @s u v)
   {-# INLINE zero #-}
