@@ -39,6 +39,7 @@ import GHC.Exts (Coercible,coerce)
 import Data.Void (Void,absurd)
 import Control.Newtype.Generics
 import Data.Constraint ((:-)(..),Dict(..))
+import Type.Reflection
 
 import ConCat.Misc ((:*),(:+),Unop,Binop, inNew2,Parity,R,Yes1,result, C4)
 import ConCat.Rep
@@ -79,7 +80,7 @@ infixl 6 .-., .+^, @+
 
 type RepDel a = (HasRep a, HasDelta (Rep a), Delta a ~ Delta (Rep a))
 
-class HasDelta a where
+class Typeable a => HasDelta a where
   type Delta a
   (@+) :: HasDelta a => Binop (Delta a)
   (.+^) :: a -> Delta a -> a
@@ -158,7 +159,7 @@ instance (HasDelta a, HasDelta b) => HasDelta (a :+ b) where
   _        .-. _       = Nothing
   zeroD = Nothing
 
-instance HasDelta b => HasDelta (a -> b) where
+instance (Typeable a, HasDelta b) => HasDelta (a -> b) where
   type Delta (a -> b) = a -> Delta b
   (df @+ df') a = (@+) @b (df a) (df' a)
   (.+^) = liftA2 (.+^)
@@ -192,7 +193,7 @@ instance HasRep (Del a) where
 
 AbsTy(Del a)
 
-instance HasDelta a => Additive (Del a) where
+instance (HasDelta a, Typeable a) => Additive (Del a) where
   (^+^) = inAbst2 ((@+) @a)
   zero = abst (zeroD @a)
 

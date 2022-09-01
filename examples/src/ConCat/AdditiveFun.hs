@@ -47,6 +47,8 @@ import qualified ConCat.Matrix as Matrix
 
 import qualified ConCat.Inline.ClassOp as IC
 
+import Type.Reflection
+
 AbsTyImports
 
 infixr 1 -+>
@@ -79,7 +81,7 @@ AbsTy(a -+> b)
 
 #define Abst(nm) nm = abst nm ; {-# INLINE nm #-}
 
-instance Additive b => Additive (a -+> b) where
+instance (Typeable a, Additive b) => Additive (a -+> b) where
   Abst(zero)
   (^+^) = inAbst2 (^+^)
   {-# OPINLINE (^+^) #-}

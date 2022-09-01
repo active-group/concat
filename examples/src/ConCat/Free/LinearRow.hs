@@ -34,6 +34,7 @@ import GHC.Generics (U1(..),(:*:)(..),(:.:)(..)) -- ,Par1(..)
 -- import GHC.TypeLits (KnownNat)
 
 import Data.Constraint
+import Type.Reflection
 import Data.Key (Zip(..))
 import Data.Distributive (collect)
 import Data.Functor.Rep (Representable)
@@ -223,7 +224,7 @@ zeroLM = L zeroL
 addLM :: Ok2 (L s) a b => Binop (L s a b)
 addLM = (inNew2.zipWith.zipWith) (+)
 
-instance Ok2 (L s) a b => Ad.Additive (L s a b) where
+instance (Typeable s, Ok2 (L s) a b) => Ad.Additive (L s a b) where
   zero  = zeroLM
   (^+^) = addLM
 
