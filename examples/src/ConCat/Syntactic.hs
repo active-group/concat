@@ -584,3 +584,9 @@ instance MatrixMap2 f2 f1 => MatrixMapCat2 Syn f2 f1 where
   INLINER(linearVecC)
   INLINER(outerVecC)
   INLINER(linearBothC)
+
+instance (Num b, Ord a) => ChiCat Syn a b where
+  chiGTC = app0 "chiGTC"
+  chiLTC = app0 "chiLTC"
+  INLINER(chiGTC)
+  INLINER(chiLTC)

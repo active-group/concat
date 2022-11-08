@@ -123,6 +123,7 @@ import ConCat.Category
   , MatrixMapCat2 
   , TransposeCat
   , BumpCat
+  , ChiCat
   )
 import ConCat.Matrix 
   ( MatrixMap (linearP, linearX, outerV)
@@ -134,6 +135,8 @@ import ConCat.Matrix
   , Transposed
   , Bump (bump, unbump)
   , BumpRep
+  , chiGT
+  , chiLT
   )
 
 -- | Dummy identity function to trigger rewriting of non-inlining operations to
@@ -897,6 +900,8 @@ Op0(linearBothC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => (f1 s :* 
 Op0(bumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => b s `k` BumpRep b s)
 Op0(unbumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => BumpRep b s `k` b s)
 Op0(transposeC, (Ok k s, TransposeCat k m) => m s `k` Transposed m s)
+Op0(chiGTC, (ChiCat k a b, Ok2 k a b, Num b, OkProd k) => (a :* a) `k` b)
+Op0(chiLTC, (ChiCat k a b, Ok2 k a b, Num b, OkProd k) => (a :* a) `k` b)
 
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
 -- Op0(sumC  , (SumCat k h a)              => h a `k` a)
@@ -920,6 +925,8 @@ Catify(linearBoth, linearBothC)
 Catify(bump, bumpC)
 Catify(unbump, unbumpC)
 Catify(transpose, transposeC)
+Catify(chiGT, chiGTC)
+Catify(chiLT, chiLTC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)

@@ -2774,3 +2774,13 @@ instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
   {-# OPINLINE linearVecC #-}
   {-# OPINLINE outerVecC #-}
   {-# OPINLINE linearBothC #-}
+
+class (Ok2 k a b, Num b, OkProd k) => ChiCat k a b where
+  chiGTC :: (a :* a) `k` b
+  chiLTC :: (a :* a) `k` b
+
+instance (Num b, Ord a) => ChiCat (->) a b where
+  chiGTC = IC.inline Matrix.chiGT
+  chiLTC = IC.inline Matrix.chiLT
+  {-# OPINLINE chiGTC #-}
+  {-# OPINLINE chiLTC #-}

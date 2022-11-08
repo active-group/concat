@@ -82,3 +82,10 @@ instance KnownNat n => MatrixMap2 (Vector.Vector m) (Vector.Vector n) where
   linearVec (Comp1 ba) a = (<.> a) <$> ba
   outerVec b a = Comp1 ((*^ b) <$> a)
   linearBoth (a, Comp1 ba) = (<.> a) <$> ba
+chiGT :: (Num b, Ord a) => (a, a) -> b
+chiGT (x, y) = if x >= y then 1 else 0
+{-# NOINLINE chiGT #-}
+
+chiLT :: (Num b, Ord a) => (a, a) -> b
+chiLT (x, y) = if x < y then 1 else 0
+{-# NOINLINE chiLT #-}

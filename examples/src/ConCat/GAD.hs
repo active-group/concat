@@ -472,3 +472,9 @@ instance
     {-# INLINE linearVecC #-}
     {-# INLINE outerVecC #-}
     {-# INLINE linearBothC #-}
+
+instance (Ok2 k a b, Ok k (a, a), Num b, Ord a, OkProd k, ConstCat k b) => ChiCat (GD k) a b where
+  chiGTC = linearD chiGTC (const 0)
+  chiLTC = linearD chiLTC (const 0)
+  {-# INLINE chiGTC #-}
+  {-# INLINE chiLTC #-}
