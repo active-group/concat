@@ -2331,9 +2331,9 @@ forkF exF :: h b `k` h b
 instance OkIxProd (->) h where okIxProd = Entail (Sub Dict)
 
 instance Zip h => IxMonoidalPCat (->) h where
-  -- crossF = zipWith id -- 2018-02-07 notes
+  crossF = zipWith id -- 2018-02-07 notes
   -- This generates better output code for re-transformation:
-  crossF = curry (fmap (uncurry id) . (uncurry zip))
+  -- crossF = curry (fmap (uncurry id) . (uncurry zip))
   crossF2 f x = fmap (uncurry f) . zip x
   {-# OPINLINE crossF #-}
 

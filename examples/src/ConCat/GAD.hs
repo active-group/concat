@@ -328,8 +328,8 @@ instance (ProductCat k, ConstCat k Bool, Ok2 k Bool a) => IfCat (GD k) a where
 instance (IxProductCat k h, FunctorCat k h) => FunctorCat (GD k) h where
   -- This don't work on GPUs because of the use of crossF, i.e.
   -- functor-of-morphisms
-  -- fmapC = inAbst (\ q -> second crossF . unzipC . fmapC q)
-  fmapC = inAbst (\ q -> fmapC (exl . q) &&& crossF2 (exr . q))
+  fmapC = inAbst (\ q -> second crossF . unzipC . fmapC q)
+  -- fmapC = inAbst (\ q -> fmapC (exl . q) &&& crossF2 (exr . q))
   Linear(unzipC)
   {-# INLINE fmapC #-}
 
