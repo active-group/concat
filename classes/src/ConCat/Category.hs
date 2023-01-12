@@ -2331,13 +2331,7 @@ forkF exF :: h b `k` h b
 instance OkIxProd (->) h where okIxProd = Entail (Sub Dict)
 
 instance Zip h => IxMonoidalPCat (->) h where
-  --crossF = zipWith id -- 2018-02-07 notes
-  -- ghc transforms this into a call to zapC
-  -- correct, but Mike doesn't know why
-  -- (or rather, into a reference into the dictionary, which the plugin can't pick up)
-  
-  -- This generates better output code for re-transformation:
-  crossF hab =  fmap (uncurry id) . zip hab
+  crossF = zipWith id -- 2018-02-07 notes
   crossF2 f x = fmap (uncurry f) . zip x
   {-# INLINE crossF #-}
   {-# INLINE crossF2 #-}
