@@ -262,7 +262,6 @@ Ip2(||||,forall k a c d. (MCoproductPCat k, Ok3 k a c d) => (c `k` a) -> (d `k` 
 -- Op1(rassocSD,forall k a b c. (CoproductPCat k, Ok3 k a b c) => CoprodP k (CoprodP k a b) c `k` CoprodP k a (CoprodP k b c))
 
 Op1(crossF, (IxMonoidalPCat k h, Ok2 k a b) => h (a `k` b) -> (h a `k` h b))
-Op2(crossF2, (IxMonoidalPCat k h, Ok3 k a b c) => (c -> (a `k` b)) -> h c -> (h a `k` h b))
 
 Op0(exF   , (IxProductCat k h, Ok  k a  ) => h (h a `k` a))
 Op1(forkF , (IxProductCat k h, Ok2 k a b) => h (a `k` b) -> (a `k` h b))

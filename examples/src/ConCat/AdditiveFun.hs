@@ -179,7 +179,6 @@ instance Additive1 h => OkIxProd (-+>) h where
 
 instance ({- Representable h, Pointed h, -} Zip h, Additive1 h) => IxMonoidalPCat (-+>) h where
   crossF = inAbstF1 crossF
-  crossF2 f x = abst (crossF2 (fmap repr f) x)
   {-# OPINLINE crossF #-}
 
 instance (Representable h, Zip h, Pointed h, Additive1 h) => IxProductCat (-+>) h where
