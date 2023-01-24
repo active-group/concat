@@ -44,7 +44,7 @@ import ConCat.AltCat
 import ConCat.Misc (Unop)
 import ConCat.Additive (Additive)
 import ConCat.Rep
-import ConCat.Matrix (MatrixMap (..), MatrixMap2 (..), Transpose (..), Bump (..))
+import ConCat.Matrix (MatrixMap (..), Transpose (..), Bump (..))
 -- import ConCat.Finite
 
 #ifdef ShowTypes
@@ -556,14 +556,6 @@ appPrec :: Prec
 appPrec = 11 -- was 10
 -- Revisit
 
-instance MatrixMap m => MatrixMapCat Syn m where
-  linearPC _ = app0 "linearPC"
-  linearXC _ = app0 "linearXC"
-  outerVC _ = app0 "outerVC"
-  INLINER(linearPC)
-  INLINER(linearXC)
-  INLINER(outerVC)
-
 instance Transpose m => TransposeCat Syn m where
   transposeC = app0 "transposeC"
   INLINER(transposeC)
@@ -574,7 +566,7 @@ instance Bump m => BumpCat Syn m where
   INLINER(bumpC)
   INLINER(unbumpC)
 
-instance MatrixMap2 f2 f1 => MatrixMapCat2 Syn f2 f1 where
+instance MatrixMap f2 f1 => MatrixMapCat Syn f2 f1 where
   linearMatC _ = app0 "linearMatC"
   linearVecC _ = app0 "linearVecC"
   outerVecC _ = app0 "outerVecC"
@@ -584,9 +576,3 @@ instance MatrixMap2 f2 f1 => MatrixMapCat2 Syn f2 f1 where
   INLINER(linearVecC)
   INLINER(outerVecC)
   INLINER(linearBothC)
-
-instance (Num b, Ord a) => ChiCat Syn a b where
-  chiGTC = app0 "chiGTC"
-  chiLTC = app0 "chiLTC"
-  INLINER(chiGTC)
-  INLINER(chiLTC)

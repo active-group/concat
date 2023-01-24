@@ -307,22 +307,6 @@ instance Matrix.Transpose (g :.: f) => TransposeCat (-+>) (g :.: f) where
   -- transposeC :: forall f g s. Ok (-+>) s => (g :.: f) s -+> (f :.: g) s
   transposeC = AddFun Matrix.transpose
   {-# NOINLINE [0] transposeC #-}
-  
-instance (Foldable f, Zip f, Functor g) => MatrixMapCat (-+>) (g :.: f) where
-  linearPC :: 
-    forall f g s. 
-    ( Ok (-+>) s, Foldable f, Zip f, Functor g, Num s) => 
-    f s -> (g :.: f) s -+> g s
-  linearPC v = AddFun (Matrix.linearP v)
-  linearXC :: 
-    forall f g s. 
-    ( Ok (-+>) s, Foldable f, Zip f, Functor g, Num s) => 
-    (g :.: f) s -> f s -+> g s
-  linearXC m = AddFun (Matrix.linearX m)
-  outerVC v = AddFun (Matrix.outerV v)
-  {-# OPINLINE linearPC #-}
-  {-# OPINLINE linearXC #-}
-  {-# OPINLINE outerVC #-}
 
 instance Matrix.Bump f => BumpCat (-+>) f where
   bumpC = AddFun Matrix.bump
@@ -331,23 +315,23 @@ instance Matrix.Bump f => BumpCat (-+>) f where
   {-# OPINLINE unbumpC #-}
 
 instance
-  ( Matrix.MatrixMap2 f2 f1
+  ( Matrix.MatrixMap f2 f1
   , Additive1 f1
   , Additive1 f2
-  , Additive1 (Matrix.Matrix2 f2 f1)
-  ) => MatrixMapCat2 (-+>) f2 f1 where
+  , Additive1 (Matrix.Matrix f2 f1)
+  ) => MatrixMapCat (-+>) f2 f1 where
   linearMatC v = AddFun (Matrix.linearMat v)
   linearVecC ::
     forall s.
     ( Ok (-+>) s
     , Additive s
     , Num s
-    ) => Matrix.Matrix2 f2 f1 s -> (f1 s -+> f2 s)
+    ) => Matrix.Matrix f2 f1 s -> (f1 s -+> f2 s)
   linearVecC m =
     linearBothC . (id &&& (const m))
     <+ okFunctor @(-+>) @f1 @s
     <+ okFunctor @(-+>) @f2 @s
-    <+ okFunctor @(-+>) @(Matrix.Matrix2 f2 f1) @s
+    <+ okFunctor @(-+>) @(Matrix.Matrix f2 f1) @s
   outerVecC v = AddFun (Matrix.outerVec v)
   outerBothC = AddFun (uncurry Matrix.outerVec)
   linearBothC = AddFun Matrix.linearBoth

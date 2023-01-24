@@ -265,21 +265,6 @@ toDual :: forall k a b. (a -> b) -> (b `k` a)
 toDual f = unDual (toCcc f)
 {-# INLINE toDual #-}
 
-instance 
-  ( MatrixMapCat k m,
-    TransposeCat k m,
-    MatrixMapCat k (Matrix.Transposed m), 
-    Matrix.Dim1 (Matrix.Transposed m) ~ Matrix.Dim2 m, 
-    Matrix.Dim2 (Matrix.Transposed m) ~ Matrix.Dim1 m
-  ) => 
-  MatrixMapCat (Dual k) m where
-    linearPC v = Dual (outerVC v)
-    linearXC m = Dual (linearXC (transposeC m))
-    outerVC v = Dual (linearPC v)
-    {-# INLINE linearPC #-}
-    {-# INLINE linearXC #-}
-    {-# INLINE outerVC #-}
-
 instance BumpCat k v => BumpCat (Dual k) v where
   bumpC = Dual unbumpC
   unbumpC = Dual bumpC
@@ -287,17 +272,17 @@ instance BumpCat k v => BumpCat (Dual k) v where
   {-# INLINE unbumpC #-}
 
 instance 
-  ( MatrixMapCat2 k f2 f1
-  , TransposeCat k (Matrix.Matrix2 f2 f1)
-  , Matrix.Transposed (Matrix.Matrix2 f2 f1) ~ Matrix.Matrix2 f1 f2
-  , MatrixMapCat2 k f1 f2
+  ( MatrixMapCat k f2 f1
+  , TransposeCat k (Matrix.Matrix f2 f1)
+  , Matrix.Transposed (Matrix.Matrix f2 f1) ~ Matrix.Matrix f1 f2
+  , MatrixMapCat k f1 f2
   , CoproductPCat k
   , Additive1 f1
   , Additive1 f2
-  , Additive1 (Matrix.Matrix2 f2 f1)
+  , Additive1 (Matrix.Matrix f2 f1)
   ) => 
-  MatrixMapCat2 (Dual k) f2 f1 where
-    linearMatC :: forall s . (Ok k s, Additive s, Num s) => f1 s -> Dual k (Matrix.Matrix2 f2 f1 s) (f2 s)
+  MatrixMapCat (Dual k) f2 f1 where
+    linearMatC :: forall s . (Ok k s, Additive s, Num s) => f1 s -> Dual k (Matrix.Matrix f2 f1 s) (f2 s)
     linearMatC v = Dual (outerVecC v)
     linearVecC m = Dual (linearVecC (transposeC m))
     outerVecC v = Dual (linearMatC v)

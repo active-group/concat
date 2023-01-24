@@ -2676,19 +2676,6 @@ f `crossSecondFirst` g = second g . first f
 
 #endif
 
-class (Matrix.MatrixMap m, Category k) => MatrixMapCat k m where
-  linearPC :: (Ok k s, Additive s, Num s) => Matrix.Dim1 m s -> m s `k` Matrix.Dim2 m s
-  linearXC :: (Ok k s, Additive s, Num s) => m s -> Matrix.Dim1 m s `k` Matrix.Dim2 m s
-  outerVC :: (Ok k s, Num s) => Matrix.Dim1 m s -> Matrix.Dim2 m s `k` m s
-
-instance Matrix.MatrixMap m => MatrixMapCat (->) m where
-  linearPC = IC.inline Matrix.linearP
-  linearXC = IC.inline Matrix.linearX
-  outerVC = IC.inline Matrix.outerV
-  {-# OPINLINE linearPC #-}
-  {-# OPINLINE linearXC #-}
-  {-# OPINLINE outerVC #-}
-
 class (Matrix.Transpose m, Category k) => TransposeCat k m where
   transposeC :: Ok k s => m s `k` Matrix.Transposed m s
 
@@ -2707,56 +2694,56 @@ instance Matrix.Bump b => BumpCat (->) b where
   {-# OPINLINE unbumpC #-}
 
 class
-  ( Matrix.MatrixMap2 f2 f1
+  ( Matrix.MatrixMap f2 f1
   , Category k
   , ProductCat k
   , MonoidalPCat k
   , OkFunctor k f1
   , OkFunctor k f2
-  , OkFunctor k (Matrix.Matrix2 f2 f1)
-  ) => MatrixMapCat2 k f2 f1 where
-  linearMatC :: (Ok k s, Additive s, Num s) => f1 s -> Matrix.Matrix2 f2 f1 s `k` f2 s
+  , OkFunctor k (Matrix.Matrix f2 f1)
+  ) => MatrixMapCat k f2 f1 where
+  linearMatC :: (Ok k s, Additive s, Num s) => f1 s -> Matrix.Matrix f2 f1 s `k` f2 s
   linearMatC v =
-    linearBothC . ((const v) &&& id)
-    <+ okProd @k @(ConstObj k (f1 s)) @(Matrix.Matrix2 f2 f1 s)
+    linearBothC . (const v &&& id)
+    <+ okProd @k @(ConstObj k (f1 s)) @(Matrix.Matrix f2 f1 s)
     <+ okFunctor @k @f1 @s
     <+ okFunctor @k @f2 @s
-    <+ okFunctor @k @(Matrix.Matrix2 f2 f1) @s
+    <+ okFunctor @k @(Matrix.Matrix f2 f1) @s
   default linearMatC ::
     forall s.
     ( Ok k s
     , Additive s
     , Num s
     , ConstCat k (f1 s)
-    ) => f1 s -> Matrix.Matrix2 f2 f1 s `k` f2 s
-  linearVecC :: (Ok k s, Additive s, Num s) => Matrix.Matrix2 f2 f1 s -> f1 s `k` f2 s
+    ) => f1 s -> Matrix.Matrix f2 f1 s `k` f2 s
+  linearVecC :: (Ok k s, Additive s, Num s) => Matrix.Matrix f2 f1 s -> f1 s `k` f2 s
   linearVecC m =
-    linearBothC . (id &&& (const m))
-    <+ okProd @k @(f1 s) @(ConstObj k (Matrix.Matrix2 f2 f1 s))
+    linearBothC . (id &&& const m)
+    <+ okProd @k @(f1 s) @(ConstObj k (Matrix.Matrix f2 f1 s))
     <+ okFunctor @k @f1 @s
     <+ okFunctor @k @f2 @s
-    <+ okFunctor @k @(Matrix.Matrix2 f2 f1) @s
+    <+ okFunctor @k @(Matrix.Matrix f2 f1) @s
   default linearVecC ::
     forall s.
     ( Ok k s
     , Additive s
     , Num s
-    , ConstCat k (Matrix.Matrix2 f2 f1 s)
-    ) => Matrix.Matrix2 f2 f1 s -> f1 s `k` f2 s
-  outerVecC :: (Ok k s, Num s) => f1 s -> f2 s `k` Matrix.Matrix2 f2 f1 s
+    , ConstCat k (Matrix.Matrix f2 f1 s)
+    ) => Matrix.Matrix f2 f1 s -> f1 s `k` f2 s
+  outerVecC :: (Ok k s, Num s) => f1 s -> f2 s `k` Matrix.Matrix f2 f1 s
   default outerVecC ::
-    forall s.(Ok k s, Num s, ConstCat k (f1 s)) => f1 s -> f2 s `k` Matrix.Matrix2 f2 f1 s
+    forall s.(Ok k s, Num s, ConstCat k (f1 s)) => f1 s -> f2 s `k` Matrix.Matrix f2 f1 s
   outerVecC v =
     outerBothC . (const v &&& id)
     <+ okProd @k @(f1 s) @(f2 s)
     <+ okFunctor @k @f1 @s
     <+ okFunctor @k @f2 @s
-    <+ okFunctor @k @(Matrix.Matrix2 f2 f1) @s
-  outerBothC :: (Ok k s, Num s) => (f1 s :* f2 s) `k` Matrix.Matrix2 f2 f1 s
-  linearBothC :: (Ok k s, Additive s, Num s) => (f1 s :* Matrix.Matrix2 f2 f1 s) `k` f2 s
+    <+ okFunctor @k @(Matrix.Matrix f2 f1) @s
+  outerBothC :: (Ok k s, Num s) => (f1 s :* f2 s) `k` Matrix.Matrix f2 f1 s
+  linearBothC :: (Ok k s, Additive s, Num s) => (f1 s :* Matrix.Matrix f2 f1 s) `k` f2 s
   {-# MINIMAL linearBothC, outerVecC #-}
 
-instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
+instance Matrix.MatrixMap f2 f1 => MatrixMapCat (->) f2 f1 where
   linearMatC v = IC.inline (Matrix.linearMat v) -- FIXME: express in terms of linearBoth?
   linearVecC m = IC.inline (Matrix.linearVec m)
   outerVecC v = IC.inline (Matrix.outerVec v)
@@ -2766,13 +2753,3 @@ instance Matrix.MatrixMap2 f2 f1 => MatrixMapCat2 (->) f2 f1 where
   {-# OPINLINE linearVecC #-}
   {-# OPINLINE outerVecC #-}
   {-# OPINLINE linearBothC #-}
-
-class (Ok2 k a b, Num b, OkProd k) => ChiCat k a b where
-  chiGTC :: (a :* a) `k` b
-  chiLTC :: (a :* a) `k` b
-
-instance (Num b, Ord a) => ChiCat (->) a b where
-  chiGTC = IC.inline Matrix.chiGT
-  chiLTC = IC.inline Matrix.chiLT
-  {-# OPINLINE chiGTC #-}
-  {-# OPINLINE chiLTC #-}

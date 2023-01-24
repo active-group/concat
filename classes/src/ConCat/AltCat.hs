@@ -84,7 +84,6 @@ import ConCat.Additive
 import qualified ConCat.Category as C
 import ConCat.Satisfy
 import ConCat.Known
-import qualified ConCat.MatrixMap as MatrixMap
 
 import ConCat.Category
   ( Category, Ok,Ok2,Ok3,Ok4,Ok5,Ok6, Ok', (<~), (~>), Show2(..)
@@ -120,23 +119,16 @@ import ConCat.Category
   -- 
   -- , crossSecondFirst
   , MatrixMapCat 
-  , MatrixMapCat2 
   , TransposeCat
   , BumpCat
-  , ChiCat
   )
 import ConCat.Matrix 
-  ( MatrixMap (linearP, linearX, outerV)
-  , Dim1
-  , Dim2
-  , MatrixMap2 (linearMat, linearVec, outerVec, linearBoth)
-  , Matrix2
+  ( MatrixMap (linearMat, linearVec, outerVec, linearBoth)
+  , Matrix
   , Transpose (transpose)
   , Transposed
   , Bump (bump, unbump)
   , BumpRep
-  , chiGT
-  , chiLT
   )
 
 -- | Dummy identity function to trigger rewriting of non-inlining operations to
@@ -888,19 +880,14 @@ Op0(minimumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(maximumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
 Op0(maximumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
-Op1(linearPC, (Ok k s, MatrixMapCat k m, Additive s, Num s) => Dim1 m s -> m s `k` Dim2 m s)
-Op1(linearXC, (Ok k s, MatrixMapCat k m, Additive s, Num s) => m s -> Dim1 m s `k` Dim2 m s)
-Op1(outerVC, (Ok k s, MatrixMapCat k m, Num s) => Dim1 m s -> Dim2 m s `k` m s)
-Op1(linearMatC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => f1 s -> Matrix2 f2 f1 s `k` f2 s)
-Op1(linearVecC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => Matrix2 f2 f1 s -> f1 s `k` f2 s)
-Op0(outerVecC, (Ok k s, MatrixMapCat2 k f2 f1, Num s) => f1 s -> f2 s `k` Matrix2 f2 f1 s)
-Op0(outerBothC, (Ok k s, MatrixMapCat2 k f2 f1, Num s) => (f1 s :* f2 s) `k` Matrix2 f2 f1 s)
-Op0(linearBothC, (Ok k s, MatrixMapCat2 k f2 f1, Additive s, Num s) => (f1 s :* Matrix2 f2 f1 s) `k` f2 s)
+Op1(linearMatC, (Ok k s, MatrixMapCat k f2 f1, Additive s, Num s) => f1 s -> Matrix f2 f1 s `k` f2 s)
+Op1(linearVecC, (Ok k s, MatrixMapCat k f2 f1, Additive s, Num s) => Matrix f2 f1 s -> f1 s `k` f2 s)
+Op0(outerVecC, (Ok k s, MatrixMapCat k f2 f1, Num s) => f1 s -> f2 s `k` Matrix f2 f1 s)
+Op0(outerBothC, (Ok k s, MatrixMapCat k f2 f1, Num s) => (f1 s :* f2 s) `k` Matrix f2 f1 s)
+Op0(linearBothC, (Ok k s, MatrixMapCat k f2 f1, Additive s, Num s) => (f1 s :* Matrix f2 f1 s) `k` f2 s)
 Op0(bumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => b s `k` BumpRep b s)
 Op0(unbumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => BumpRep b s `k` b s)
 Op0(transposeC, (Ok k s, TransposeCat k m) => m s `k` Transposed m s)
-Op0(chiGTC, (ChiCat k a b, Ok2 k a b, Num b, OkProd k) => (a :* a) `k` b)
-Op0(chiLTC, (ChiCat k a b, Ok2 k a b, Num b, OkProd k) => (a :* a) `k` b)
 
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
 -- Op0(sumC  , (SumCat k h a)              => h a `k` a)
@@ -913,10 +900,6 @@ Catify(zip  , curry zipC)
 Catify(Pointed.point, pointC)
 Catify(ConCatPointed.point, pointC)
 Catify(sumA , sumAC)
-Catify(linearX, linearXC)
-Catify(linearP, linearPC)
-Catify(outerV, outerVC)
-Catify(MatrixMap.linearX, linearXC)
 Catify(linearMat, linearMatC)
 Catify(linearVec, linearVecC)
 Catify(outerVec, curry outerBothC)
@@ -924,8 +907,6 @@ Catify(linearBoth, linearBothC)
 Catify(bump, bumpC)
 Catify(unbump, unbumpC)
 Catify(transpose, transposeC)
-Catify(chiGT, chiGTC)
-Catify(chiLT, chiLTC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)

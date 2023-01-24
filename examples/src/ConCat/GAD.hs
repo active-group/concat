@@ -428,14 +428,6 @@ deriv :: forall k a b . (a -> b) -> (a -> (a `k` b))
 deriv h = snd P.. andDeriv h
 {-# INLINE deriv #-}
 
-instance MatrixMapCat k m => MatrixMapCat (GD k) m where
-  linearPC v = linearD (IC.inline linearPC v) (IC.inline linearPC v)
-  linearXC m = linearD (IC.inline linearXC m) (IC.inline linearXC m)
-  outerVC v = linearD (IC.inline outerVC v) (IC.inline outerVC v)
-  {-# INLINE linearPC #-}
-  {-# INLINE linearXC #-}
-  {-# INLINE outerVC #-}
-
 instance BumpCat k m => BumpCat (GD k) m where
   bumpC = linearD bumpC bumpC -- bump0?
   unbumpC = linearD unbumpC unbumpC
@@ -443,35 +435,29 @@ instance BumpCat k m => BumpCat (GD k) m where
   {-# INLINE unbumpC #-}
 
 instance 
-  ( MatrixMapCat2 k f2 f1
+  ( MatrixMapCat k f2 f1
   , CoproductPCat k
   , ProductCat k
   , MonoidalPCat k
   , OkFunctor k f1
   , OkFunctor k f2
-  , OkFunctor k (Matrix.Matrix2 f2 f1)
+  , OkFunctor k (Matrix.Matrix f2 f1)
   , OkProd k
   , OkCoprodP k
-  ) => MatrixMapCat2 (GD k) f2 f1 where
+  ) => MatrixMapCat (GD k) f2 f1 where
     -- using IC.inline here makes linting from the plugin fail
     linearMatC v = linearD (linearMatC v) (linearMatC v)
     linearVecC m = linearD (linearVecC m) (linearVecC m)
     outerVecC = error "Mike was too lazy to do this"
-    linearBothC :: forall s. (Ok (GD k) s, Additive s, Num s) => GD k (f1 s :* Matrix.Matrix2 f2 f1 s) (f2 s)
+    linearBothC :: forall s. (Ok (GD k) s, Additive s, Num s) => GD k (f1 s :* Matrix.Matrix f2 f1 s) (f2 s)
     linearBothC =
       D (linearBothC &&& \(v, m) -> jamP . ((linearVecC m . exl) &&& (linearMatC v . exr)))
-      <+ okProd @k @(f1 s) @(Matrix.Matrix2 f2 f1 s)
+      <+ okProd @k @(f1 s) @(Matrix.Matrix f2 f1 s)
       <+ okCoprodP @k @(f2 s) @(f2 s)
       <+ okFunctor @k @f1 @s
       <+ okFunctor @k @f2 @s
-      <+ okFunctor @k @(Matrix.Matrix2 f2 f1) @s
+      <+ okFunctor @k @(Matrix.Matrix f2 f1) @s
     {-# INLINE linearMatC #-}
     {-# INLINE linearVecC #-}
     {-# INLINE outerVecC #-}
     {-# INLINE linearBothC #-}
-
-instance (Ok2 k a b, Ok k (a, a), Num b, Ord a, OkProd k, ConstCat k b) => ChiCat (GD k) a b where
-  chiGTC = linearD chiGTC (const 0)
-  chiLTC = linearD chiLTC (const 0)
-  {-# INLINE chiGTC #-}
-  {-# INLINE chiLTC #-}
