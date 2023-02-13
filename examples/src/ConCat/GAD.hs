@@ -44,6 +44,9 @@ import ConCat.Misc ((:*),type (&&),type (&+&),cond,result,unzip,sqr,bottom)
 import ConCat.Additive
 import ConCat.AltCat
 import ConCat.Rep
+import qualified ConCat.Matrix as Matrix
+
+import qualified ConCat.Inline.ClassOp as IC
 
 AbsTyImports
 
@@ -424,3 +427,37 @@ andDeriv h = unD (toCcc h)
 deriv :: forall k a b . (a -> b) -> (a -> (a `k` b))
 deriv h = snd P.. andDeriv h
 {-# INLINE deriv #-}
+
+instance BumpCat k m => BumpCat (GD k) m where
+  bumpC = linearD bumpC bumpC -- bump0?
+  unbumpC = linearD unbumpC unbumpC
+  {-# INLINE bumpC #-}
+  {-# INLINE unbumpC #-}
+
+instance 
+  ( MatrixMapCat k f2 f1
+  , CoproductPCat k
+  , ProductCat k
+  , MonoidalPCat k
+  , OkFunctor k f1
+  , OkFunctor k f2
+  , OkFunctor k (Matrix.Matrix f2 f1)
+  , OkProd k
+  , OkCoprodP k
+  ) => MatrixMapCat (GD k) f2 f1 where
+    -- using IC.inline here makes linting from the plugin fail
+    linearMatC v = linearD (linearMatC v) (linearMatC v)
+    linearVecC m = linearD (linearVecC m) (linearVecC m)
+    outerVecC = error "Mike was too lazy to do this"
+    linearBothC :: forall s. (Ok (GD k) s, Additive s, Num s) => GD k (f1 s :* Matrix.Matrix f2 f1 s) (f2 s)
+    linearBothC =
+      D (linearBothC &&& \(v, m) -> jamP . ((linearVecC m . exl) &&& (linearMatC v . exr)))
+      <+ okProd @k @(f1 s) @(Matrix.Matrix f2 f1 s)
+      <+ okCoprodP @k @(f2 s) @(f2 s)
+      <+ okFunctor @k @f1 @s
+      <+ okFunctor @k @f2 @s
+      <+ okFunctor @k @(Matrix.Matrix f2 f1) @s
+    {-# INLINE linearMatC #-}
+    {-# INLINE linearVecC #-}
+    {-# INLINE outerVecC #-}
+    {-# INLINE linearBothC #-}

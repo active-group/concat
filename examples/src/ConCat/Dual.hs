@@ -38,6 +38,7 @@ import qualified ConCat.Category as C
 -- import qualified ConCat.AltCat as A
 import ConCat.AltCat
 import ConCat.AdditiveFun (Additive,Additive1(..))
+import qualified ConCat.Matrix as Matrix
 
 AbsTyImports
 
@@ -264,3 +265,33 @@ instance (Additive a, Additive1 h, MinMaxFunctorCat (->) h a, PointedCat k h a) 
 toDual :: forall k a b. (a -> b) -> (b `k` a)
 toDual f = unDual (toCcc f)
 {-# INLINE toDual #-}
+
+
+instance BumpCat k v => BumpCat (Dual k) v where
+  bumpC = Dual unbumpC
+  unbumpC = Dual bumpC
+  {-# INLINE bumpC #-}
+  {-# INLINE unbumpC #-}
+
+instance 
+  ( MatrixMapCat k f2 f1
+  , TransposeCat k (Matrix.Matrix f2 f1)
+  , Matrix.Transposed (Matrix.Matrix f2 f1) ~ Matrix.Matrix f1 f2
+  , MatrixMapCat k f1 f2
+  , CoproductPCat k
+  , Additive1 f1
+  , Additive1 f2
+  , Additive1 (Matrix.Matrix f2 f1)
+  ) => 
+  MatrixMapCat (Dual k) f2 f1 where
+    linearMatC :: forall s . (Ok k s, Additive s, Num s) => f1 s -> Dual k (Matrix.Matrix f2 f1 s) (f2 s)
+    linearMatC v = Dual (outerVecC v)
+    linearVecC m = Dual (linearVecC (transposeC m))
+    outerVecC v = Dual (linearMatC v)
+    linearBothC = error "linearBothC is not linear"
+    outerBothC = error "outerBothC is not linear"
+    {-# INLINE linearMatC #-}
+    {-# INLINE linearVecC #-}
+    {-# INLINE outerVecC #-}
+    {-# INLINE outerBothC #-}
+    {-# INLINE linearBothC #-}

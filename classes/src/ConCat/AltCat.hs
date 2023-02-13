@@ -72,6 +72,8 @@ import GHC.TypeLits (KnownNat,natVal)
 import Data.Finite (Finite)
 import Data.Vector.Sized (Vector)
 
+import qualified ConCat.Matrix as Matrix
+
 import ConCat.Misc
   ( (:*),(:+),(:^),Binop, unzip,PseudoFun(..),oops,type (&&),type (&+&)
   , result, C1,C2,C3,C4,C5,C6, int )
@@ -104,7 +106,7 @@ import ConCat.Category
   -- , Arr, ArrayCat
   , TransitiveCon(..)
   , U2(..), (:**:)(..)
-  , type (|-)(..), (<+), OkProd,okProd, OkCoprod,okCoprod, OkExp, okExp
+  , type (|-)(..), (<+), OkProd,okProd, OkCoprod, okCoprod, OkCoprodP, okCoprodP, OkExp, okExp
   , OpCon(..),Sat(..) -- ,FunctorC(..)
   , yes1, forkCon, joinCon, inForkCon
   -- Functor-level. To be removed.
@@ -115,6 +117,17 @@ import ConCat.Category
   , fmap', liftA2' 
   -- 
   -- , crossSecondFirst
+  , MatrixMapCat 
+  , TransposeCat
+  , BumpCat
+  )
+import ConCat.Matrix 
+  ( MatrixMap (linearMat, linearVec, outerVec, linearBoth)
+  , Matrix
+  , Transpose (transpose)
+  , Transposed
+  , Bump (bump, unbump)
+  , BumpRep
   )
 
 -- | Dummy identity function to trigger rewriting of non-inlining operations to
@@ -862,6 +875,14 @@ Op0(zipC    , (ZipCat k h    , Ok2 k a b) => (h a :* h b) `k` h (a :* b))
 Op0(strength, (Strong k h    , Ok2 k a b) => (a :* h b) `k` h (a :* b))
 Op0(pointC  , (PointedCat k h a)          => a `k` h a)
 Op0(sumAC   , (AddCat k h a)              => h a `k` a)
+Op1(linearMatC, (Ok k s, MatrixMapCat k f2 f1, Additive s, Num s) => f1 s -> Matrix f2 f1 s `k` f2 s)
+Op1(linearVecC, (Ok k s, MatrixMapCat k f2 f1, Additive s, Num s) => Matrix f2 f1 s -> f1 s `k` f2 s)
+Op0(outerVecC, (Ok k s, MatrixMapCat k f2 f1, Num s) => f1 s -> f2 s `k` Matrix f2 f1 s)
+Op0(outerBothC, (Ok k s, MatrixMapCat k f2 f1, Num s) => (f1 s :* f2 s) `k` Matrix f2 f1 s)
+Op0(linearBothC, (Ok k s, MatrixMapCat k f2 f1, Additive s, Num s) => (f1 s :* Matrix f2 f1 s) `k` f2 s)
+Op0(bumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => b s `k` BumpRep b s)
+Op0(unbumpC, (Ok k s, BumpCat k b, Matrix.BumpConstraint b s) => BumpRep b s `k` b s)
+Op0(transposeC, (Ok k s, TransposeCat k m) => m s `k` Transposed m s)
 Op0(minimumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(maximumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
@@ -878,6 +899,13 @@ Catify(zip  , curry zipC)
 Catify(Pointed.point, pointC)
 Catify(ConCatPointed.point, pointC)
 Catify(sumA , sumAC)
+Catify(linearMat, linearMatC)
+Catify(linearVec, linearVecC)
+Catify(outerVec, curry outerBothC)
+Catify(linearBoth, linearBothC)
+Catify(bump, bumpC)
+Catify(unbump, unbumpC)
+Catify(transpose, transposeC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)

@@ -72,6 +72,7 @@ import Data.Finite.Internal (Finite(..))
 
 import ConCat.Misc hiding ((<~),(~>),type (&&))
 import ConCat.Rep hiding (Rep)
+import qualified ConCat.Matrix as Matrix
 import ConCat.MinMax
 import qualified ConCat.Rep as R
 import ConCat.Additive
@@ -2680,3 +2681,82 @@ f `crossSecondFirst` g = second g . first f
 {-# INLINE crossSecondFirst #-}
 
 #endif
+
+
+class (Matrix.Transpose m, Category k) => TransposeCat k m where
+  transposeC :: Ok k s => m s `k` Matrix.Transposed m s
+
+instance Matrix.Transpose m => TransposeCat (->) m where
+  transposeC = IC.inline Matrix.transpose
+  {-# OPINLINE transposeC #-}
+
+class (Category k, Matrix.Bump b) => BumpCat k b where
+  bumpC :: (Ok k s, Matrix.BumpConstraint b s) => b s `k` Matrix.BumpRep b s
+  unbumpC :: (Ok k s, Matrix.BumpConstraint b s) => Matrix.BumpRep b s `k` b s
+
+instance Matrix.Bump b => BumpCat (->) b where
+  bumpC = IC.inline Matrix.bump
+  unbumpC = IC.inline Matrix.unbump
+  {-# OPINLINE bumpC #-}
+  {-# OPINLINE unbumpC #-}
+
+class
+  ( Matrix.MatrixMap f2 f1
+  , Category k
+  , ProductCat k
+  , MonoidalPCat k
+  , OkFunctor k f1
+  , OkFunctor k f2
+  , OkFunctor k (Matrix.Matrix f2 f1)
+  ) => MatrixMapCat k f2 f1 where
+  linearMatC :: (Ok k s, Additive s, Num s) => f1 s -> Matrix.Matrix f2 f1 s `k` f2 s
+  linearMatC v =
+    linearBothC . (const v &&& id)
+    <+ okProd @k @(ConstObj k (f1 s)) @(Matrix.Matrix f2 f1 s)
+    <+ okFunctor @k @f1 @s
+    <+ okFunctor @k @f2 @s
+    <+ okFunctor @k @(Matrix.Matrix f2 f1) @s
+  default linearMatC ::
+    forall s.
+    ( Ok k s
+    , Additive s
+    , Num s
+    , ConstCat k (f1 s)
+    ) => f1 s -> Matrix.Matrix f2 f1 s `k` f2 s
+  linearVecC :: (Ok k s, Additive s, Num s) => Matrix.Matrix f2 f1 s -> f1 s `k` f2 s
+  linearVecC m =
+    linearBothC . (id &&& const m)
+    <+ okProd @k @(f1 s) @(ConstObj k (Matrix.Matrix f2 f1 s))
+    <+ okFunctor @k @f1 @s
+    <+ okFunctor @k @f2 @s
+    <+ okFunctor @k @(Matrix.Matrix f2 f1) @s
+  default linearVecC ::
+    forall s.
+    ( Ok k s
+    , Additive s
+    , Num s
+    , ConstCat k (Matrix.Matrix f2 f1 s)
+    ) => Matrix.Matrix f2 f1 s -> f1 s `k` f2 s
+  outerVecC :: (Ok k s, Num s) => f1 s -> f2 s `k` Matrix.Matrix f2 f1 s
+  default outerVecC ::
+    forall s.(Ok k s, Num s, ConstCat k (f1 s)) => f1 s -> f2 s `k` Matrix.Matrix f2 f1 s
+  outerVecC v =
+    outerBothC . (const v &&& id)
+    <+ okProd @k @(f1 s) @(f2 s)
+    <+ okFunctor @k @f1 @s
+    <+ okFunctor @k @f2 @s
+    <+ okFunctor @k @(Matrix.Matrix f2 f1) @s
+  outerBothC :: (Ok k s, Num s) => (f1 s :* f2 s) `k` Matrix.Matrix f2 f1 s
+  linearBothC :: (Ok k s, Additive s, Num s) => (f1 s :* Matrix.Matrix f2 f1 s) `k` f2 s
+  {-# MINIMAL linearBothC, outerVecC #-}
+
+instance Matrix.MatrixMap f2 f1 => MatrixMapCat (->) f2 f1 where
+  linearMatC v = IC.inline (Matrix.linearMat v) -- FIXME: express in terms of linearBoth?
+  linearVecC m = IC.inline (Matrix.linearVec m)
+  outerVecC v = IC.inline (Matrix.outerVec v)
+  outerBothC = IC.inline (uncurry Matrix.outerVec)
+  linearBothC = IC.inline Matrix.linearBoth
+  {-# OPINLINE linearMatC #-}
+  {-# OPINLINE linearVecC #-}
+  {-# OPINLINE outerVecC #-}
+  {-# OPINLINE linearBothC #-}

@@ -32,12 +32,14 @@ import Data.Constraint (Dict(..),(:-)(..))
 import Data.Key (Zip)
 import Data.Pointed (Pointed)
 import Data.Functor.Rep (Representable(tabulate,index))
+import GHC.Generics ((:.:) (..))
 
 import ConCat.Orphans ()
 import qualified ConCat.Category as Category
 import ConCat.AltCat
 import ConCat.Rep
 import ConCat.Additive
+import qualified ConCat.Matrix as Matrix
 
 import qualified ConCat.Inline.ClassOp as IC
 
@@ -298,3 +300,41 @@ addFun f = repr (toCcc @(-+>) f)
 addFun' :: (a -> b) -> (a -> b)
 addFun' f = repr (toCcc' @(-+>) f)
 {-# INLINE addFun' #-}
+
+
+instance Matrix.Transpose (g :.: f) => TransposeCat (-+>) (g :.: f) where
+  -- transposeC :: forall f g s. Ok (-+>) s => (g :.: f) s -+> (f :.: g) s
+  transposeC = AddFun Matrix.transpose
+  {-# NOINLINE [0] transposeC #-}
+
+instance Matrix.Bump f => BumpCat (-+>) f where
+  bumpC = AddFun Matrix.bump
+  unbumpC = AddFun Matrix.unbump
+  {-# OPINLINE bumpC #-}
+  {-# OPINLINE unbumpC #-}
+
+instance
+  ( Matrix.MatrixMap f2 f1
+  , Additive1 f1
+  , Additive1 f2
+  , Additive1 (Matrix.Matrix f2 f1)
+  ) => MatrixMapCat (-+>) f2 f1 where
+  linearMatC v = AddFun (Matrix.linearMat v)
+  linearVecC ::
+    forall s.
+    ( Ok (-+>) s
+    , Additive s
+    , Num s
+    ) => Matrix.Matrix f2 f1 s -> (f1 s -+> f2 s)
+  linearVecC m =
+    linearBothC . (id &&& (const m))
+    <+ okFunctor @(-+>) @f1 @s
+    <+ okFunctor @(-+>) @f2 @s
+    <+ okFunctor @(-+>) @(Matrix.Matrix f2 f1) @s
+  outerVecC v = AddFun (Matrix.outerVec v)
+  outerBothC = AddFun (uncurry Matrix.outerVec)
+  linearBothC = AddFun Matrix.linearBoth
+  {-# OPINLINE linearMatC #-}
+  {-# OPINLINE linearVecC #-}
+  {-# OPINLINE outerVecC #-}
+  {-# OPINLINE linearBothC #-}
