@@ -7,32 +7,32 @@ digraph cos_2x_adr {
   bgcolor=transparent
   nslimit=20
   subgraph clusterc0 { label=""; color=white; margin=0; c0 [label="{In|{<Out0>}}"] }
-  subgraph clusterc109 { label=""; color=white; margin=0; c109 [label="{2.0|{<Out0>}}"] }
-  subgraph clusterc243 { label=""; color=white; margin=0; c243 [label="{{<In0>|<In1>}|\×|{<Out0>}}"] }
-  subgraph clusterc463 { label=""; color=white; margin=0; c463 [label="{{<In0>}|cos|{<Out0>}}"] }
-  subgraph clusterc464 { label=""; color=white; margin=0; c464 [label="{{<In0>}|sin|{<Out0>}}"] }
-  subgraph cluster_528 {
+  subgraph clusterc61 { label=""; color=white; margin=0; c61 [label="{2.0|{<Out0>}}"] }
+  subgraph clusterc179 { label=""; color=white; margin=0; c179 [label="{{<In0>|<In1>}|\×|{<Out0>}}"] }
+  subgraph clusterc361 { label=""; color=white; margin=0; c361 [label="{{<In0>}|cos|{<Out0>}}"] }
+  subgraph clusterc362 { label=""; color=white; margin=0; c362 [label="{{<In0>}|sin|{<Out0>}}"] }
+  subgraph cluster_426 {
     margin=8
     fontsize=20
     labeljust=r
     color=DarkGreen
-    c524 [label="{{<In0>|<In1>}|\×|{<Out0>}}"]
-    c520 [label="{{<In0>|<In1>}|\×|{<Out0>}}"]
-    c519 [label="{In|{<Out0>}}"]
-    c527 [label="{{<In0>}|Out}"]
-    c525 [label="{{<In0>}|negate|{<Out0>}}"]
-    c109:Out0 -> c524:In0 [label="Double"]
-    c520:Out0 -> c524:In1 [label="Double"]
-    c464:Out0 -> c520:In0 [label="Double"]
-    c519:Out0 -> c520:In1 [label="Double"]
-    c525:Out0 -> c527:In0 [label="Double"]
-    c524:Out0 -> c525:In0 [label="Double"]
+    c422 [label="{{<In0>|<In1>}|\×|{<Out0>}}"]
+    c418 [label="{{<In0>|<In1>}|\×|{<Out0>}}"]
+    c417 [label="{In|{<Out0>}}"]
+    c425 [label="{{<In0>}|Out}"]
+    c423 [label="{{<In0>}|negate|{<Out0>}}"]
+    c61:Out0 -> c422:In0 [label="Double"]
+    c418:Out0 -> c422:In1 [label="Double"]
+    c362:Out0 -> c418:In0 [label="Double"]
+    c417:Out0 -> c418:In1 [label="Double"]
+    c423:Out0 -> c425:In0 [label="Double"]
+    c422:Out0 -> c423:In0 [label="Double"]
   }
-  subgraph clusterc529 { label=""; color=white; margin=0; c529 [label="{{<In0>|<In1>}|Out}"] }
-  c0:Out0 -> c243:In0 [label="Double"]
-  c109:Out0 -> c243:In1 [label="Double"]
-  c243:Out0 -> c463:In0 [label="Double"]
-  c243:Out0 -> c464:In0 [label="Double"]
-  c463:Out0 -> c529:In0 [label="Double"]
-  c527 -> c529:In1 [ltail=cluster_528,label="Double ’ Double"]
+  subgraph clusterc427 { label=""; color=white; margin=0; c427 [label="{{<In0>|<In1>}|Out}"] }
+  c0:Out0 -> c179:In0 [label="Double"]
+  c61:Out0 -> c179:In1 [label="Double"]
+  c179:Out0 -> c361:In0 [label="Double"]
+  c179:Out0 -> c362:In0 [label="Double"]
+  c361:Out0 -> c427:In0 [label="Double"]
+  c425 -> c427:In1 [ltail=cluster_426,label="Double ’ Double"]
 }

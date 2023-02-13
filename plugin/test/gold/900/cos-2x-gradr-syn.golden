@@ -52,31 +52,28 @@ apply .
     dup) .
    dup) ***
   ((mulC ***
+    abst .
     apply .
-    ((curry
-      (abst .
-       apply .
-       (coerce .
-        curry (apply . (exl *** repr . exr) . dup) .
-        curry
+    ((coerce .
+      curry (apply . (exl *** repr . exr) . dup) .
+      curry
+      (curry
+       (apply . (exl . exl *** apply . (exr . exl *** exr) . dup) . dup)) .
+      repr .
+      abst .
+      apply .
+      (curry
+       (apply .
         (curry
-         (apply . (exl . exl *** apply . (exr . exl *** exr) . dup) . dup)) .
-        repr .
-        apply .
-        (coerce .
-         curry (apply . (exl *** repr . exr) . dup) .
-         curry
          (curry
-          ((apply . (exl . exl *** exl . exr) . dup ***
-            apply . (exr . exl *** exr . exr) . dup) .
-           dup)) .
-         repr . repr . exl ***
-         repr . exr) .
-        dup ***
-        abst . curry (dup . exr)) .
-       dup) .
-      abst . abst . curry mulC . exr . exr ***
-      abst . abst . curry mulC . exl . exr) .
+          ((apply . (repr . repr . exr . exl . exl *** exl . exr) . dup ***
+            apply . (repr . repr . exr . exl *** exr . exr) . dup) .
+           dup)) ***
+         abst . abst . curry mulC . exl . exr . exl) .
+        dup) ***
+       abst . abst . curry mulC . exr . exr) .
+      dup ***
+      abst . curry (dup . exr)) .
      dup) .
     dup) .
    dup) .
@@ -103,18 +100,17 @@ apply .
   (apply .
    (curry
     (((exl . exr *** exl . exr . exl) . dup ***
+      abst .
+      abst .
       apply .
-      (coerce .
-       curry (apply . (exl *** repr . exr) . dup) .
-       coerce .
-       curry (apply . (exl *** repr . exr) . dup) .
-       curry
+      (curry
        (curry
-        ((apply . (exl . exl *** exl . exr) . dup ***
+        ((apply .
+          ((repr . repr . exr *** exl . exr . exl) . dup) .
+          (id *** exr . exr . exl . exl) . dup ***
           apply . (exr . exl *** exr . exr) . dup) .
-         dup)) .
-       repr . repr . exr . exr ***
-       exr . exr . exl) .
+         dup)) ***
+       repr . repr . exr . exr . exl) .
       dup) .
      dup) ***
     ((const 2.0 ***

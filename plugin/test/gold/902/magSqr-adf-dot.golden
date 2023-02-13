@@ -7,40 +7,40 @@ digraph magSqr_adf {
   bgcolor=transparent
   nslimit=20
   subgraph clusterc0 { label=""; color=white; margin=0; c0 [label="{In|{<Out0>|<Out1>}}"] }
-  subgraph clusterc513 { label=""; color=white; margin=0; c513 [label="{{<In0>|<In1>}|\×|{<Out0>}}"] }
-  subgraph clusterc793 { label=""; color=white; margin=0; c793 [label="{{<In0>|<In1>}|\×|{<Out0>}}"] }
-  subgraph clusterc981 { label=""; color=white; margin=0; c981 [label="{{<In0>|<In1>}|+|{<Out0>}}"] }
-  subgraph cluster_1009 {
+  subgraph clusterc434 { label=""; color=white; margin=0; c434 [label="{{<In0>|<In1>}|\×|{<Out0>}}"] }
+  subgraph clusterc674 { label=""; color=white; margin=0; c674 [label="{{<In0>|<In1>}|\×|{<Out0>}}"] }
+  subgraph clusterc851 { label=""; color=white; margin=0; c851 [label="{{<In0>|<In1>}|+|{<Out0>}}"] }
+  subgraph cluster_879 {
     margin=8
     fontsize=20
     labeljust=r
     color=DarkGreen
-    c1003 [label="{{<In0>|<In1>}|\×|{<Out0>}}"]
-    c1005 [label="{{<In0>|<In1>}|\×|{<Out0>}}"]
-    c1004 [label="{{<In0>|<In1>}|+|{<Out0>}}"]
-    c1007 [label="{{<In0>|<In1>}|+|{<Out0>}}"]
-    c1006 [label="{{<In0>|<In1>}|+|{<Out0>}}"]
-    c1002 [label="{In|{<Out0>|<Out1>}}"]
-    c1008 [label="{{<In0>}|Out}"]
-    c0:Out0 -> c1003:In0 [label="Double"]
-    c1002:Out0 -> c1003:In1 [label="Double"]
-    c0:Out1 -> c1005:In0 [label="Double"]
-    c1002:Out1 -> c1005:In1 [label="Double"]
-    c1003:Out0 -> c1004:In0 [label="Double"]
-    c1003:Out0 -> c1004:In1 [label="Double"]
-    c1004:Out0 -> c1007:In0 [label="Double"]
-    c1006:Out0 -> c1007:In1 [label="Double"]
-    c1005:Out0 -> c1006:In0 [label="Double"]
-    c1005:Out0 -> c1006:In1 [label="Double"]
-    c1007:Out0 -> c1008:In0 [label="Double"]
+    c873 [label="{{<In0>|<In1>}|\×|{<Out0>}}"]
+    c875 [label="{{<In0>|<In1>}|\×|{<Out0>}}"]
+    c874 [label="{{<In0>|<In1>}|+|{<Out0>}}"]
+    c877 [label="{{<In0>|<In1>}|+|{<Out0>}}"]
+    c876 [label="{{<In0>|<In1>}|+|{<Out0>}}"]
+    c872 [label="{In|{<Out0>|<Out1>}}"]
+    c878 [label="{{<In0>}|Out}"]
+    c0:Out0 -> c873:In0 [label="Double"]
+    c872:Out0 -> c873:In1 [label="Double"]
+    c0:Out1 -> c875:In0 [label="Double"]
+    c872:Out1 -> c875:In1 [label="Double"]
+    c873:Out0 -> c874:In0 [label="Double"]
+    c873:Out0 -> c874:In1 [label="Double"]
+    c874:Out0 -> c877:In0 [label="Double"]
+    c876:Out0 -> c877:In1 [label="Double"]
+    c875:Out0 -> c876:In0 [label="Double"]
+    c875:Out0 -> c876:In1 [label="Double"]
+    c877:Out0 -> c878:In0 [label="Double"]
   }
-  subgraph clusterc1010 { label=""; color=white; margin=0; c1010 [label="{{<In0>|<In1>}|Out}"] }
-  c0:Out1 -> c513:In0 [label="Double"]
-  c0:Out1 -> c513:In1 [label="Double"]
-  c0:Out0 -> c793:In0 [label="Double"]
-  c0:Out0 -> c793:In1 [label="Double"]
-  c513:Out0 -> c981:In0 [label="Double"]
-  c793:Out0 -> c981:In1 [label="Double"]
-  c981:Out0 -> c1010:In0 [label="Double"]
-  c1008 -> c1010:In1 [ltail=cluster_1009,label="Double × Double ’ Double"]
+  subgraph clusterc880 { label=""; color=white; margin=0; c880 [label="{{<In0>|<In1>}|Out}"] }
+  c0:Out1 -> c434:In0 [label="Double"]
+  c0:Out1 -> c434:In1 [label="Double"]
+  c0:Out0 -> c674:In0 [label="Double"]
+  c0:Out0 -> c674:In1 [label="Double"]
+  c434:Out0 -> c851:In0 [label="Double"]
+  c674:Out0 -> c851:In1 [label="Double"]
+  c851:Out0 -> c880:In0 [label="Double"]
+  c878 -> c880:In1 [ltail=cluster_879,label="Double × Double ’ Double"]
 }
