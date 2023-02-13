@@ -169,6 +169,11 @@ data CccEnv = CccEnv { dtrace           :: forall a. String -> SDoc -> a -> a
                      , reprCV           :: Id
                      , abstCV           :: Id
                      , coerceV          :: Id
+                     , linearMatV       :: Id
+                     , outerVecV        :: Id
+                     , barbarbarbarV    :: Id
+                     , astastastV       :: Id
+                     , sumACV           :: Id
                      , bottomTV         :: Id
                      , repTc            :: TyCon
                   -- , hasRepMeth       :: HasRepMeth
@@ -654,6 +659,46 @@ ccc (CccEnv {..}) (Ops {..}) cat =
         | v == fmapV
         , Just body' <- unfoldMaybe e
         -> Doing("lam fmap unfold")
+           -- dtrace "lam fmap unfold" (ppr body') $
+           return (mkCcc (Lam x body'))
+
+     Trying("linearMatC unfold")
+     e@(collectArgs -> (Var v, Type (isFunCat -> False) : _))
+        | v == linearMatV
+        , Just body' <- unfoldMaybe e
+        -> Doing("lam linearMatC unfold")
+           -- dtrace "lam fmap unfold" (ppr body') $
+           return (mkCcc (Lam x body'))
+       
+     Trying("outerVecC unfold")
+     e@(collectArgs -> (Var v, Type (isFunCat -> False) : _))
+        | v == outerVecV
+        , Just body' <- unfoldMaybe e
+        -> Doing("lam linearMatC unfold")
+           -- dtrace "lam fmap unfold" (ppr body') $
+           return (mkCcc (Lam x body'))
+
+     Trying("|||| unfold")
+     e@(collectArgs -> (Var v, Type (isFunCat -> False) : _))
+        | v == barbarbarbarV
+        , Just body' <- unfoldMaybe e
+        -> Doing("lam |||| unfold")
+           -- dtrace "lam fmap unfold" (ppr body') $
+           return (mkCcc (Lam x body'))
+
+     Trying("*** unfold")
+     e@(collectArgs -> (Var v, Type {- (isFunCat -> False) -} _ : _))
+        | v == astastastV
+        , Just body' <- unfoldMaybe e
+        -> Doing("lam *** unfold")
+           -- dtrace "lam fmap unfold" (ppr body') $
+           return (mkCcc (Lam x body'))
+
+     Trying("sumAC unfold")
+     e@(collectArgs -> (Var v, Type (isFunCat -> False) : _))
+        | v == sumACV
+        , Just body' <- unfoldMaybe e
+        -> Doing("lam sumAC unfold")
            -- dtrace "lam fmap unfold" (ppr body') $
            return (mkCcc (Lam x body'))
        
@@ -1704,6 +1749,11 @@ mkCccEnv opts = do
   abstCV        <- findCatId "abstC"
   reprCV        <- findCatId "reprC"
   coerceV       <- findCatId "coerceC"
+  linearMatV    <- findCatId "linearMatC"
+  outerVecV     <- findCatId "outerVecC"
+  barbarbarbarV <- findCatId "||||"
+  astastastV    <- findCatId "***"
+  sumACV        <- findCatId "sumAC"
   cccV          <- findCatId "toCcc'"
   cccPV         <- findCatId "toCcc''"
   uncccV        <- findCatId "unCcc'"
