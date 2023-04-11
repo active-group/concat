@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -68,3 +69,14 @@ xs <.> ys = sumA (Zip.zipWith (*) xs ys)
 
 (*^) :: (Functor a, Num s) => s -> a s -> a s
 s *^ v = (s *) <$> v
+class Backpermute a b where
+  type Permutation a b
+  backpermute :: Permutation a b -> a s -> b s
+
+class Frontpermute a b where 
+  type FPermutation a b
+  frontpermute :: FPermutation a b -> a s -> b s
+
+class Backpermute a b => ConvPermutable a b where
+  type PermutationParameters a b
+  convPermutation :: PermutationParameters a b -> Permutation a b

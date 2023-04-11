@@ -2761,3 +2761,17 @@ instance Matrix.MatrixMap f2 f1 => MatrixMapCat (->) f2 f1 where
   {-# OPINLINE linearVecC #-}
   {-# OPINLINE outerVecC #-}
   {-# OPINLINE linearBothC #-}
+
+class BackpermuteCat k a b where
+  backpermuteC :: (Ok k s, Matrix.Backpermute a b) => Matrix.Permutation a b -> a s `k` b  s
+
+instance Matrix.Backpermute a b => BackpermuteCat (->) a b where
+  backpermuteC permutation = IC.inline (Matrix.backpermute permutation)
+  {-# OPINLINE backpermuteC #-}
+
+class FrontpermuteCat k a b where
+  frontpermuteC :: (Ok k s, Matrix.Frontpermute a b) => Matrix.FPermutation a b -> a  s `k` b s
+
+instance Matrix.Frontpermute a b => FrontpermuteCat (->) a b where
+  frontpermuteC permutation = IC.inline (Matrix.frontpermute permutation)
+  {-# OPINLINE frontpermuteC #-}

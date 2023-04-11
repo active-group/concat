@@ -461,3 +461,9 @@ instance
     {-# INLINE linearVecC #-}
     {-# INLINE outerVecC #-}
     {-# INLINE linearBothC #-}
+
+instance
+  ( BackpermuteCat k a b
+  ) => BackpermuteCat (GD k) a b where
+    backpermuteC perm = linearD (backpermuteC perm) (backpermuteC perm)
+    {-# INLINE backpermuteC #-}

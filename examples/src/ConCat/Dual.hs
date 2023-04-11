@@ -295,3 +295,12 @@ instance
     {-# INLINE outerVecC #-}
     {-# INLINE outerBothC #-}
     {-# INLINE linearBothC #-}
+
+instance 
+  ( FrontpermuteCat k b a
+  , Matrix.Frontpermute b a
+  , Matrix.Backpermute a b
+  , Matrix.Permutation a b ~ Matrix.FPermutation b a
+  ) => BackpermuteCat (Dual k) a b where
+    backpermuteC perm = Dual (frontpermuteC perm)
+    {-# INLINE backpermuteC #-}
