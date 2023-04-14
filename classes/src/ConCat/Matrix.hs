@@ -69,14 +69,15 @@ xs <.> ys = sumA (Zip.zipWith (*) xs ys)
 
 (*^) :: (Functor a, Num s) => s -> a s -> a s
 s *^ v = (s *) <$> v
-class Backpermute a b where
-  type Permutation a b
-  backpermute :: Permutation a b -> a s -> b s
 
-class Frontpermute a b where 
-  type FPermutation a b
-  frontpermute :: FPermutation a b -> a s -> b s
+class Backpermute a b s where
+  type Permutation a b s
+  backpermute :: Permutation a b s -> a s -> b s
 
-class Backpermute a b => ConvPermutable a b where
-  type PermutationParameters a b
-  convPermutation :: PermutationParameters a b -> Permutation a b
+class Frontpermute a b s where 
+  type FPermutation a b s
+  frontpermute :: FPermutation a b s -> a s -> b s
+
+class Backpermute a b s => ConvPermutable a b s where
+  type PermutationParameters a b s
+  convPermutation :: PermutationParameters a b s -> Permutation a b s

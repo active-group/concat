@@ -297,10 +297,10 @@ instance
     {-# INLINE linearBothC #-}
 
 instance 
-  ( FrontpermuteCat k b a
-  , Matrix.Frontpermute b a
-  , Matrix.Backpermute a b
-  , Matrix.Permutation a b ~ Matrix.FPermutation b a
-  ) => BackpermuteCat (Dual k) a b where
+  ( FrontpermuteCat k b a s
+  , Matrix.Frontpermute b a s
+  , Matrix.Backpermute a b s
+  , Matrix.Permutation a b s ~ Matrix.FPermutation b a s
+  ) => BackpermuteCat (Dual k) a b s where
     backpermuteC perm = Dual (frontpermuteC perm)
     {-# INLINE backpermuteC #-}

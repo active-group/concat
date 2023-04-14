@@ -341,6 +341,6 @@ instance
   {-# OPINLINE outerVecC #-}
   {-# OPINLINE linearBothC #-}
 
-instance (Matrix.Frontpermute a b) => FrontpermuteCat (-+>) a b where
+instance (Matrix.Frontpermute a b s) => FrontpermuteCat (-+>) a b s where
   frontpermuteC perm = AddFun (Matrix.frontpermute perm)
   {-# OPINLINE frontpermuteC #-}

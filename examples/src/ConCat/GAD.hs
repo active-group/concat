@@ -463,7 +463,7 @@ instance
     {-# INLINE linearBothC #-}
 
 instance
-  ( BackpermuteCat k a b
-  ) => BackpermuteCat (GD k) a b where
+  ( BackpermuteCat k a b s
+  ) => BackpermuteCat (GD k) a b s where
     backpermuteC perm = linearD (backpermuteC perm) (backpermuteC perm)
     {-# INLINE backpermuteC #-}
