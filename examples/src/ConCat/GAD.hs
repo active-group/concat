@@ -467,3 +467,9 @@ instance
   ) => BackpermuteCat (GD k) a b s where
     backpermuteC perm = linearD (backpermuteC perm) (backpermuteC perm)
     {-# INLINE backpermuteC #-}
+
+instance (PadCat k a b) => PadCat (GD k) a b where
+  padC = linearD padC padC
+  unpadC = linearD unpadC unpadC
+  {-# INLINE padC #-}
+  {-# INLINE unpadC #-}

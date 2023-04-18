@@ -27,6 +27,11 @@ class Bump b where
   bump :: BumpConstraint b s => b s -> BumpRep b s
   unbump :: BumpConstraint b s => BumpRep b s -> b s
 
+class Pad a b where
+  type PadConstraint a b :: Type -> Constraint
+  pad :: PadConstraint a b s => a s -> b s
+  unpad :: PadConstraint a b s => b s -> a s
+
 instance (Distributive f, Functor g) => Transpose (g :.: f) where
   type Transposed (g :.: f) = f :.: g
   transpose = Comp1 . distribute . unComp1

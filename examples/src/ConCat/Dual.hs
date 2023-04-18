@@ -304,3 +304,9 @@ instance
   ) => BackpermuteCat (Dual k) a b s where
     backpermuteC perm = Dual (frontpermuteC perm)
     {-# INLINE backpermuteC #-}
+
+instance (PadCat k a b) => PadCat (Dual k) a b where
+  padC = Dual unpadC
+  unpadC = Dual padC
+  {-# INLINE padC#-}
+  {-# INLINE unpadC#-}

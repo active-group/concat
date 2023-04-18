@@ -344,3 +344,9 @@ instance
 instance (Matrix.Frontpermute a b s) => FrontpermuteCat (-+>) a b s where
   frontpermuteC perm = abst (frontpermuteC perm) -- AddFun (Matrix.frontpermute perm)
   {-# OPINLINE frontpermuteC #-}
+
+instance Matrix.Pad a b => PadCat (-+>) a b where
+  padC = abst padC
+  unpadC = abst unpadC
+  {-# OPINLINE padC #-}
+  {-# OPINLINE unpadC #-}

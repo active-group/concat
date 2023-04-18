@@ -122,6 +122,7 @@ import ConCat.Category
   , BumpCat
   , BackpermuteCat
   , FrontpermuteCat
+  , PadCat
   )
 import ConCat.Matrix 
   ( MatrixMap (linearMat, linearVec, outerVec, linearBoth)
@@ -134,6 +135,8 @@ import ConCat.Matrix
   , Permutation
   , Frontpermute (frontpermute)
   , FPermutation
+  , Pad (pad, unpad)
+  , PadConstraint
   )
 
 -- | Dummy identity function to trigger rewriting of non-inlining operations to
@@ -895,6 +898,8 @@ Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :* 
 Op0(maximumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
 Op1(backpermuteC, (Ok k s, Matrix.Backpermute a b s, BackpermuteCat k a b s) => Permutation a b s -> a s `k` b s)
 Op1(frontpermuteC, (Ok k s, Matrix.Frontpermute a b s, FrontpermuteCat k a b s) => FPermutation a b s -> a s `k` b s)
+Op0(padC, (Ok k s, Matrix.Pad a b, Matrix.PadConstraint a b s, PadCat k a b) => a s `k` b s)
+Op0(unpadC, (Ok k s, Matrix.Pad a b, Matrix.PadConstraint a b s, PadCat k a b) => b s `k` a s)
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
 -- Op0(sumC  , (SumCat k h a)              => h a `k` a)
 
@@ -915,6 +920,8 @@ Catify(unbump, unbumpC)
 Catify(transpose, transposeC)
 Catify(backpermute, backpermuteC)
 Catify(frontpermute, frontpermuteC)
+Catify(pad, padC)
+Catify(unpad, unpadC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)

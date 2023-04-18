@@ -2775,3 +2775,17 @@ class FrontpermuteCat k a b s where
 instance Matrix.Frontpermute a b s => FrontpermuteCat (->) a b s where
   frontpermuteC permutation = IC.inline (Matrix.frontpermute permutation)
   {-# OPINLINE frontpermuteC #-}
+
+class PadCat k a b where
+  padC :: 
+    (Ok k s, Matrix.Pad a b, Matrix.PadConstraint a b s) =>
+    a s `k` b s
+  unpadC :: 
+    (Ok k s, Matrix.Pad a b, Matrix.PadConstraint a b s) =>
+    b s `k` a s
+
+instance Matrix.Pad a b => PadCat (->) a b where
+  padC = IC.inline Matrix.pad
+  unpadC = IC.inline Matrix.unpad
+  {-# OPINILNE padC #-}
+  {-# OPINILNE unpadC #-}
