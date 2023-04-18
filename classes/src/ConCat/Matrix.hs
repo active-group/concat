@@ -86,3 +86,6 @@ class Frontpermute a b s where
 class Backpermute a b s => ConvPermutable a b s where
   type PermutationParameters a b s
   convPermutation :: PermutationParameters a b s -> Permutation a b s
+
+class Backpermute a b s => ConvKernelPermutable a b s where
+  convKernelPermutation :: Permutation a b s
