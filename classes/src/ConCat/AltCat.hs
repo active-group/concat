@@ -930,6 +930,7 @@ Catify(pad, padC)
 Catify(unpad, unpadC)
 Catify(matMulL, matMulLC)
 Catify(matMulR, matMulRC)
+Catify(matMulBoth, matMulBothC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)
