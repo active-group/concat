@@ -435,6 +435,11 @@ instance BumpCat k m => BumpCat (GD k) m where
   {-# INLINE unbumpC #-}
 
 instance 
+  (Matrix.Transpose m, TransposeCat k m) =>
+  TransposeCat (GD k) m where
+    Linear(transposeC)
+
+instance 
   ( MatrixMapCat k f2 f1
   , CoproductPCat k
   , ProductCat k

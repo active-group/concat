@@ -273,6 +273,14 @@ instance BumpCat k v => BumpCat (Dual k) v where
   {-# INLINE bumpC #-}
   {-# INLINE unbumpC #-}
 
+instance
+  ( Matrix.Transpose m
+  , TransposeCat k (Matrix.Transposed m)
+  , Matrix.Transposed (Matrix.Transposed m) ~ m
+  ) => TransposeCat (Dual k) m where
+  transposeC = abst transposeC
+  {-# INLINE transposeC #-}
+
 instance 
   ( MatrixMapCat k f2 f1
   , TransposeCat k (Matrix.Matrix f2 f1)
