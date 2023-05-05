@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -347,6 +348,12 @@ instance
     {-# INLINE matMulLC #-}
     {-# INLINE matMulRC #-}
     {-# INLINE matMulBothC #-}
+
+instance (Matrix.InnerSum a b, InnerSumCat k a b) => InnerSumCat (Dual k) a b where
+  innerSumC = abst innerPointC
+  innerPointC = abst innerSumC
+  {-# INLINE innerSumC #-}
+  {-# INLINE innerPointC #-}
 
 instance 
   ( FrontpermuteCat k b a s

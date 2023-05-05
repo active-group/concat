@@ -490,6 +490,10 @@ instance
     {-# INLINE matMulRC #-}
     {-# INLINE matMulBothC #-}
 
+instance (InnerSumCat k a b, Matrix.InnerSum a b) => InnerSumCat (GD k) a b where
+  Linear(innerSumC)
+  Linear(innerPointC)
+
 instance
   ( BackpermuteCat k a b s
   ) => BackpermuteCat (GD k) a b s where

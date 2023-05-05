@@ -124,6 +124,7 @@ import ConCat.Category
   , FrontpermuteCat
   , PadCat
   , MatMulCat
+  , InnerSumCat
   )
 import ConCat.Matrix 
   ( MatrixMap (linearMat, linearVec, outerVec, linearBoth)
@@ -140,6 +141,7 @@ import ConCat.Matrix
   , PadConstraint
   , MatMul (matMulL, matMulR, matMulBoth)
   , MatrixF
+  , InnerSum (innerSum, innerPoint)
   )
 
 -- | Dummy identity function to trigger rewriting of non-inlining operations to
@@ -906,6 +908,8 @@ Op0(unpadC, (Ok k s, Matrix.Pad a b, Matrix.PadConstraint a b s, PadCat k a b) =
 Op1(matMulLC, (Ok k s, MatMulCat k f1 f2 f3) => MatrixF f2 f3 s -> MatrixF f1 f2 s `k` MatrixF f1 f3 s)
 Op1(matMulRC, (Ok k s, MatMulCat k f1 f2 f3) => MatrixF f1 f2 s -> MatrixF f2 f3 s `k` MatrixF f1 f3 s)
 Op0(matMulBothC, (Ok k s, MatMulCat k f1 f2 f3) => (MatrixF f1 f2 s :* MatrixF f2 f3 s) `k` MatrixF f1 f3 s)
+Op0(innerSumC, (Ok k s, InnerSum a b, InnerSumCat k a b) => a s `k` b s)
+Op0(innerPointC, (Ok k s, InnerSum a b, InnerSumCat k a b) => b s `k` a s)
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
 -- Op0(sumC  , (SumCat k h a)              => h a `k` a)
 
@@ -931,6 +935,8 @@ Catify(unpad, unpadC)
 Catify(matMulL, matMulLC)
 Catify(matMulR, matMulRC)
 Catify(matMulBoth, matMulBothC)
+Catify(innerSum, innerSumC)
+Catify(innerPoint, innerPointC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)

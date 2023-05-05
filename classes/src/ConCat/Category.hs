@@ -2819,6 +2819,17 @@ instance Matrix.MatMul f1 f2 f3 => MatMulCat (->) f1 f2 f3 where
   {-# OPINLINE matMulLC #-}
   {-# OPINLINE matMulRC #-}
   {-# OPINLINE matMulBothC #-}
+
+class InnerSumCat k a b where
+  innerSumC :: Ok k s => a s `k` b s
+  innerPointC :: Ok k s => b s `k` a s
+
+instance Matrix.InnerSum a b => InnerSumCat (->) a b where
+  innerSumC = IC.inline (Matrix.innerSum)
+  innerPointC = IC.inline (Matrix.innerPoint)
+  {-# OPINLINE innerSumC #-}
+  {-# OPINLINE innerPointC #-}
+
 class BackpermuteCat k a b s where
   backpermuteC :: (Ok k s, Matrix.Backpermute a b s) => Matrix.Permutation a b s -> a s `k` b  s
 

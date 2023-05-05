@@ -352,6 +352,11 @@ instance
     {-# OPINLINE matMulLC #-}
     {-# OPINLINE matMulRC #-}
     {-# OPINLINE matMulBothC #-}
+
+instance (Matrix.InnerSum a b) => InnerSumCat (-+>) a b where
+  Abst(innerSumC)
+  Abst(innerPointC)
+
 instance (Matrix.Frontpermute a b s) => FrontpermuteCat (-+>) a b s where
   frontpermuteC perm = abst (frontpermuteC perm) -- AddFun (Matrix.frontpermute perm)
   {-# OPINLINE frontpermuteC #-}

@@ -84,6 +84,11 @@ class MatMul (f1 :: * -> *) (f2 :: * -> *) (f3 :: * -> *) where
   matMulL :: MatrixF f2 f3 s -> MatrixF f1 f2 s -> MatrixF f1 f3 s
   matMulR :: MatrixF f1 f2 s -> MatrixF f2 f3 s -> MatrixF f1 f3 s
   matMulBoth :: (MatrixF f1 f2 s, MatrixF f2 f3 s) -> MatrixF f1 f3 s
+
+class InnerSum a b where
+  innerSum :: a s -> b s
+  innerPoint :: b s -> a s
+
 class Backpermute a b s where
   type Permutation a b s
   backpermute :: Permutation a b s -> a s -> b s
