@@ -296,6 +296,50 @@ instance
     {-# INLINE outerBothC #-}
     {-# INLINE linearBothC #-}
 
+instance
+  ( MatMulCat k f1 f2 f3
+  , MatMulCat k f2 f3 f1
+  , MatMulCat k f3 f1 f2
+  , CoproductPCat k
+  , TransposeCat k (Matrix.MatrixF f1 f3)
+  , TransposeCat k (Matrix.MatrixF f2 f1)
+  , TransposeCat k (Matrix.MatrixF f3 f2)
+  , Matrix.Transpose (Matrix.MatrixF f1 f3)
+  , Matrix.Transposed (Matrix.MatrixF f1 f3) ~ Matrix.MatrixF f3 f1
+  , Matrix.Transpose (Matrix.MatrixF f2 f1)
+  , Matrix.Transposed (Matrix.MatrixF f2 f1) ~ Matrix.MatrixF f1 f2
+  , Matrix.Transpose (Matrix.MatrixF f3 f2)
+  , Matrix.Transposed (Matrix.MatrixF f3 f2) ~ Matrix.MatrixF f2 f3
+  , Additive1 (Matrix.MatrixF f1 f2)
+  , Additive1 (Matrix.MatrixF f2 f3)
+  , Additive1 (Matrix.MatrixF f1 f3)
+  ) =>
+  MatMulCat (Dual k) f1 f2 f3 where
+    matMulLC ::
+      forall s.
+      (Ok (Dual k) s) =>
+      Matrix.MatrixF f2 f3 s -> (Dual k) (Matrix.MatrixF f1 f2 s) (Matrix.MatrixF f1 f3 s)
+    matMulLC mR = 
+      Dual (transposeC . matMulRC mR . transposeC) -- (matMulLC (transposeC mR))
+      <+ okFunctor @k @(Matrix.MatrixF f1 f2) @s
+      <+ okFunctor @k @(Matrix.MatrixF f1 f3) @s
+      <+ okFunctor @k @(Matrix.MatrixF f2 f1) @s
+      <+ okFunctor @k @(Matrix.MatrixF f3 f1) @s
+    matMulRC ::
+      forall s.
+      Ok (Dual k) s =>
+      Matrix.MatrixF f1 f2 s -> (Dual k) (Matrix.MatrixF f2 f3 s) (Matrix.MatrixF f1 f3 s)
+    matMulRC mL = 
+      Dual (transposeC . matMulLC mL . transposeC) -- (matMulRC (transposeC mL))
+      <+ okFunctor @k @(Matrix.MatrixF f1 f3) @s
+      <+ okFunctor @k @(Matrix.MatrixF f3 f1) @s
+      <+ okFunctor @k @(Matrix.MatrixF f3 f2) @s
+      <+ okFunctor @k @(Matrix.MatrixF f2 f3) @s
+    matMulBothC = error "called matMulBothC @(Dual k)"
+    {-# INLINE matMulLC #-}
+    {-# INLINE matMulRC #-}
+    {-# INLINE matMulBothC #-}
+
 instance 
   ( FrontpermuteCat k b a s
   , Matrix.Frontpermute b a s

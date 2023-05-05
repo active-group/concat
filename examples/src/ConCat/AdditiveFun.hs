@@ -340,6 +340,18 @@ instance
   {-# OPINLINE outerVecC #-}
   {-# OPINLINE linearBothC #-}
 
+instance
+  ( Matrix.MatMul f1 f2 f3
+  , Additive1 (Matrix.MatrixF f1 f2)
+  , Additive1 (Matrix.MatrixF f2 f3)
+  , Additive1 (Matrix.MatrixF f1 f3)
+  ) => MatMulCat (-+>) f1 f2 f3 where
+    matMulLC mR = abst (matMulLC mR)
+    matMulRC mL = abst (matMulRC mL)
+    matMulBothC = abst matMulBothC
+    {-# OPINLINE matMulLC #-}
+    {-# OPINLINE matMulRC #-}
+    {-# OPINLINE matMulBothC #-}
 instance (Matrix.Frontpermute a b s) => FrontpermuteCat (-+>) a b s where
   frontpermuteC perm = abst (frontpermuteC perm) -- AddFun (Matrix.frontpermute perm)
   {-# OPINLINE frontpermuteC #-}

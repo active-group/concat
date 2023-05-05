@@ -123,6 +123,7 @@ import ConCat.Category
   , BackpermuteCat
   , FrontpermuteCat
   , PadCat
+  , MatMulCat
   )
 import ConCat.Matrix 
   ( MatrixMap (linearMat, linearVec, outerVec, linearBoth)
@@ -137,6 +138,8 @@ import ConCat.Matrix
   , FPermutation
   , Pad (pad, unpad)
   , PadConstraint
+  , MatMul (matMulL, matMulR, matMulBoth)
+  , MatrixF
   )
 
 -- | Dummy identity function to trigger rewriting of non-inlining operations to
@@ -900,6 +903,9 @@ Op1(backpermuteC, (Ok k s, Matrix.Backpermute a b s, BackpermuteCat k a b s) => 
 Op1(frontpermuteC, (Ok k s, Matrix.Frontpermute a b s, FrontpermuteCat k a b s) => FPermutation a b s -> a s `k` b s)
 Op0(padC, (Ok k s, Matrix.Pad a b, Matrix.PadConstraint a b s, PadCat k a b) => a s `k` b s)
 Op0(unpadC, (Ok k s, Matrix.Pad a b, Matrix.PadConstraint a b s, PadCat k a b) => b s `k` a s)
+Op1(matMulLC, (Ok k s, MatMulCat k f1 f2 f3) => MatrixF f2 f3 s -> MatrixF f1 f2 s `k` MatrixF f1 f3 s)
+Op1(matMulRC, (Ok k s, MatMulCat k f1 f2 f3) => MatrixF f1 f2 s -> MatrixF f2 f3 s `k` MatrixF f1 f3 s)
+Op0(matMulBothC, (Ok k s, MatMulCat k f1 f2 f3) => (MatrixF f1 f2 s :* MatrixF f2 f3 s) `k` MatrixF f1 f3 s)
 -- Op0(ixSumAC , (IxSummableCat k n a)       => (a :^ n) `k` a)
 -- Op0(sumC  , (SumCat k h a)              => h a `k` a)
 
@@ -922,6 +928,8 @@ Catify(backpermute, backpermuteC)
 Catify(frontpermute, frontpermuteC)
 Catify(pad, padC)
 Catify(unpad, unpadC)
+Catify(matMulL, matMulLC)
+Catify(matMulR, matMulRC)
 
 zipWithC :: Zip h => (a -> b -> c) -> (h a -> h b -> h c)
 zipWithC f = curry (fmapC (uncurry f) . zipC)

@@ -2762,6 +2762,63 @@ instance Matrix.MatrixMap f2 f1 => MatrixMapCat (->) f2 f1 where
   {-# OPINLINE outerVecC #-}
   {-# OPINLINE linearBothC #-}
 
+class
+  ( Matrix.MatMul f1 f2 f3
+  , Category k
+  , ProductCat k
+  , MonoidalPCat k
+  , OkFunctor k (Matrix.MatrixF f1 f2)
+  , OkFunctor k (Matrix.MatrixF f2 f3)
+  , OkFunctor k (Matrix.MatrixF f1 f3)
+  ) => MatMulCat k f1 f2 f3 where
+    matMulLC :: 
+      (Ok k s) => 
+      Matrix.MatrixF f2 f3 s -> 
+      Matrix.MatrixF f1 f2 s `k` Matrix.MatrixF f1 f3 s
+    default matMulLC ::
+      forall s.
+      ( Ok k s
+      , Additive s
+      , Num s
+      , ConstCat k (Matrix.MatrixF f2 f3 s)
+      , Ok k (Matrix.MatrixF f1 f2 s)
+      , Ok k (Matrix.MatrixF f1 f3 s)
+      , Ok k (Prod k (Matrix.MatrixF f1 f2 s) (ConstObj k (Matrix.MatrixF f2 f3 s)))
+      ) =>
+      Matrix.MatrixF f2 f3 s -> 
+      Matrix.MatrixF f1 f2 s `k` Matrix.MatrixF f1 f3 s
+    matMulLC mR =
+      matMulBothC @k @f1 @f2 @f3 . (id &&& const mR)
+    matMulRC :: 
+      (Ok k s) => 
+      Matrix.MatrixF f1 f2 s -> 
+      Matrix.MatrixF f2 f3 s `k` Matrix.MatrixF f1 f3 s
+    default matMulRC ::
+      forall s.
+      ( Ok k s
+      , Additive s
+      , Num s
+      , ConstCat k (Matrix.MatrixF f1 f2 s)
+      , Ok k (Matrix.MatrixF f2 f3 s)
+      , Ok k (Matrix.MatrixF f1 f3 s)
+      , Ok k (Prod k (ConstObj k (Matrix.MatrixF f1 f2 s)) (Matrix.MatrixF f2 f3 s))
+      ) =>
+      Matrix.MatrixF f1 f2 s -> 
+      Matrix.MatrixF f2 f3 s `k` Matrix.MatrixF f1 f3 s
+    matMulRC mL =
+      matMulBothC @k @f1 @f2 @f3 . (const mL &&& id)
+    matMulBothC :: 
+      (Ok k s) => 
+      (Matrix.MatrixF f1 f2 s :* Matrix.MatrixF f2 f3 s) `k` Matrix.MatrixF f1 f3 s
+    {-# MINIMAL matMulBothC #-}
+
+instance Matrix.MatMul f1 f2 f3 => MatMulCat (->) f1 f2 f3 where
+  matMulLC mR = IC.inline (Matrix.matMulL @f1 @f2 @f3 mR)
+  matMulRC mL = IC.inline (Matrix.matMulR @f1 @f2 @f3 mL)
+  matMulBothC = IC.inline (Matrix.matMulBoth @f1 @f2 @f3)
+  {-# OPINLINE matMulLC #-}
+  {-# OPINLINE matMulRC #-}
+  {-# OPINLINE matMulBothC #-}
 class BackpermuteCat k a b s where
   backpermuteC :: (Ok k s, Matrix.Backpermute a b s) => Matrix.Permutation a b s -> a s `k` b  s
 

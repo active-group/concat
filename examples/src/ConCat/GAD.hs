@@ -463,6 +463,29 @@ instance
     {-# INLINE linearBothC #-}
 
 instance
+  ( MatMulCat k f1 f2 f3
+  , CoproductPCat k
+  , OkFunctor k (Matrix.MatrixF f1 f2)
+  , OkFunctor k (Matrix.MatrixF f2 f3)
+  ) => MatMulCat (GD k) f1 f2 f3 where
+    matMulLC mR = linearD (matMulLC mR) (matMulLC mR)
+    matMulRC mL = linearD (matMulRC mL) (matMulRC mL)
+    matMulBothC :: 
+      forall s. 
+      (Ok (GD k) s) => 
+      (GD k) (Matrix.MatrixF f1 f2 s :* Matrix.MatrixF f2 f3 s) (Matrix.MatrixF f1 f3 s)
+    matMulBothC =
+      D (matMulBothC &&& \(mL, mR) -> jamP . ((matMulLC mR . exl) &&& (matMulRC mL . exr)))
+      <+ okProd @k @(Matrix.MatrixF f1 f2 s) @(Matrix.MatrixF f2 f3 s)
+      <+ okCoprodP @k @(Matrix.MatrixF f1 f3 s) @(Matrix.MatrixF f1 f3 s)
+      <+ okFunctor @k @(Matrix.MatrixF f1 f2) @s
+      <+ okFunctor @k @(Matrix.MatrixF f2 f3) @s
+      <+ okFunctor @k @(Matrix.MatrixF f1 f3) @s
+    {-# INLINE matMulLC #-}
+    {-# INLINE matMulRC #-}
+    {-# INLINE matMulBothC #-}
+
+instance
   ( BackpermuteCat k a b s
   ) => BackpermuteCat (GD k) a b s where
     backpermuteC perm = linearD (backpermuteC perm) (backpermuteC perm)

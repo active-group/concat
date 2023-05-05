@@ -2,7 +2,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilyDependencies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
@@ -75,6 +77,13 @@ xs <.> ys = sumA (Zip.zipWith (*) xs ys)
 (*^) :: (Functor a, Num s) => s -> a s -> a s
 s *^ v = (s *) <$> v
 
+type family MatrixF (f1 :: * -> *) (f2 :: * -> *) = 
+  (mat :: * -> *) | mat -> f1 f2
+
+class MatMul (f1 :: * -> *) (f2 :: * -> *) (f3 :: * -> *) where
+  matMulL :: MatrixF f2 f3 s -> MatrixF f1 f2 s -> MatrixF f1 f3 s
+  matMulR :: MatrixF f1 f2 s -> MatrixF f2 f3 s -> MatrixF f1 f3 s
+  matMulBoth :: (MatrixF f1 f2 s, MatrixF f2 f3 s) -> MatrixF f1 f3 s
 class Backpermute a b s where
   type Permutation a b s
   backpermute :: Permutation a b s -> a s -> b s
