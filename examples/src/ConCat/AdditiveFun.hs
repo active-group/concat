@@ -304,10 +304,9 @@ addFun' f = repr (toCcc' @(-+>) f)
 {-# INLINE addFun' #-}
 
 
-instance Matrix.Transpose (g :.: f) => TransposeCat (-+>) (g :.: f) where
-  -- transposeC :: forall f g s. Ok (-+>) s => (g :.: f) s -+> (f :.: g) s
-  transposeC = AddFun Matrix.transpose
-  {-# NOINLINE [0] transposeC #-}
+instance Matrix.Transpose m => TransposeCat (-+>) m where
+  transposeC = abst transposeC
+  {-# OPINLINE transposeC #-}
 
 instance Matrix.Bump f => BumpCat (-+>) f where
   bumpC = AddFun Matrix.bump
