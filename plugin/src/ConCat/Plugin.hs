@@ -40,6 +40,10 @@ import Text.Printf (printf)
 import System.IO.Unsafe (unsafePerformIO)
 import Data.IORef
 
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,0,0)
+import GHC.Utils.Trace
+import GHC.Core.Reduction (reductionCoercion, reductionReducedType)
+#endif
 #if MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
 import GHC.Builtin.Names (leftDataConName,rightDataConName
                          ,floatTyConKey,doubleTyConKey,integerTyConKey
@@ -128,7 +132,7 @@ mkFunTy' = FunTy VisArg
 #endif
 
 #if !MIN_VERSION_GLASGOW_HASKELL(9,2,0,0)
-pattern Alt :: AltCon -> [b] -> (Expr b) -> (AltCon, [b], Expr b) 
+pattern Alt :: AltCon -> [b] -> (Expr b) -> (AltCon, [b], Expr b)
 pattern Alt con bs rhs = (con, bs, rhs)
 #endif
 
@@ -253,7 +257,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      --              , second splitFunTy_maybe' (splitFunTy (exprType f))
      --              , not catClosed)) False = undefined
      f | z `FunTy` (a `FunTy` b) <- exprType f
-       , not catClosed 
+       , not catClosed
        -> Doing("top flipForkT")
           -- pprTrace "flipForkT type" (ppr (varType flipForkTV)) $
           return (onDicts (varApps flipForkTV [cat,z,a,b] []) `App` f)
@@ -270,7 +274,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
          -- return (mkCcc (subst1 v rhs body))
        else if
           -- dtrace "top Let tests" (ppr (not catClosed, substFriendly catClosed rhs, idOccs False v body)) $
-          not (isMonoTy (varType v)) || 
+          not (isMonoTy (varType v)) ||
           not catClosed ||  -- experiment
           substFriendly catClosed rhs || idOccs False v body <= 1 then
          Doing("top Let float")
@@ -311,7 +315,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      -- perhaps I don't need to.
      Trying("top Case unfold")
      -- Case scrut@(unfoldMaybe -> Nothing) _wild _rhsTy _alts
-     --   | pprTrace "top Case failed to unfold scrutinee" (ppr scrut) False -> undefined
+     --   \| pprTrace "top Case failed to unfold scrutinee" (ppr scrut) False -> undefined
      Case scrut wild rhsTy alts
        | Just scrut' <- unfoldMaybe scrut
        -> Doing("top Case unfold")  --  of dictionary
@@ -340,8 +344,8 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      -- Then we can see further into the error.
      e@(Cast e' co@(coercionRole -> Representational))
        | dtrace "found representational cast" (ppr (exprType e, exprType e', co)) False -> undefined
-       -- | FunTy' a  b  <- exprType e
-       -- | FunTy' a' b' <- exprType e'
+       -- \| FunTy' a  b  <- exprType e
+       -- \| FunTy' a' b' <- exprType e'
        | FunCo' Representational co1 co2 <- optimizeCoercion co
        --, Just coA    <- mkCoerceC_maybe cat a a'
        --, Just coB    <- mkCoerceC_maybe cat b' b
@@ -377,7 +381,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
           return (mkCcc e')
      Trying("top App")
      e@(App u v)
-       -- | dtrace "top App tests" (ppr (exprType v,liftedExpr v, mkConst' cat dom v,mkUncurryMaybe cat (mkCcc u))) False -> undefined
+       -- \| dtrace "top App tests" (ppr (exprType v,liftedExpr v, mkConst' cat dom v,mkUncurryMaybe cat (mkCcc u))) False -> undefined
        | catClosed, liftedExpr v
        , Just v' <- mkConst' cat dom v
        -- , dtrace "top App  --> " (pprWithType v') True
@@ -402,7 +406,8 @@ ccc (CccEnv {..}) (Ops {..}) cat =
    -- goLam x body | dtrace ("goLam body constr: " ++ exprConstr body) (ppr (Lam x body)) False = undefined
     where
       catClosed = isClosed cat
-   goLam' x body = 
+      subst1 v e = subst [] [(v,e)]
+   goLam' x body =
      dtrace ("goLam "++pp x++" "++pp cat++":") (pprWithType body) $
      goLam x body
 #if 0
@@ -443,7 +448,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
 
      Trying("lam Pair")
      (collectArgs -> (PairVar,(Type a : Type b : rest))) ->
-       --  | dtrace "Pair" (ppr rest) False -> undefined
+       --  \| dtrace "Pair" (ppr rest) False -> undefined
        case rest of
          []    -> -- (,) == curry id
                   -- Do we still need this case, or is it handled by catFun?
@@ -488,7 +493,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
            -- Just (mkCcc (Lam x (subst1 v rhs body')))
            -- Sometimes GHC then un-substitutes, leading to a loop.
            -- Using goLam prevents GHC from getting that chance. (Always?)
-           goLam' x (subst1 v rhs body')
+           goLam' x (subst1 [x] v rhs body')
            -- Yet another choice is to lambda-lift the binding over x and then
            -- float the let past the x binding.
          else
@@ -532,7 +537,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
         zName = uqVarName x ++ "_" ++ uqVarName y
         sub = [(x,mkEx funCat exlV (Var z)),(y,mkEx funCat exrV (Var z))]
         -- TODO: consider using fst & snd instead of exl and exr here
-        mbe' = mkCurry' cat (mkCcc (Lam z (subst sub e)))
+        mbe' = mkCurry' cat (mkCcc (Lam z (subst [] sub e)))
      Trying("lam boxer")
      (boxCon -> Just e') ->
        Doing("lam boxer")
@@ -594,7 +599,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      Case scrut _ _rhsTy [Alt (DataAlt dc) [a,b] rhs]
          | isBoxedTupleTyCon (dataConTyCon dc) ->
        Doing("lam Case of product")
-       if -- | not (isDeadBinder wild) ->  -- About to remove
+       if -- \| not (isDeadBinder wild) ->  -- About to remove
           --     pprPanic "lam Case of product live wild binder" (ppr e)
           | not (b `isFreeIn` rhs) ->
               return $ mkCcc $ -- inlineE $  -- already inlines early
@@ -619,7 +624,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      --           Trying("lam Case cast")
      Trying("lam Case unfold")
      Case scrut v altsTy alts
-       -- | pprTrace "lam Case unfold" (ppr (scrut,unfoldMaybe' scrut)) False -> undefined
+       -- \| pprTrace "lam Case unfold" (ppr (scrut,unfoldMaybe' scrut)) False -> undefined
        | Just scrut' <- unfoldMaybe' scrut
        -> Doing("lam Case unfold")
           return $ mkCcc $ Lam x $
@@ -720,10 +725,10 @@ ccc (CccEnv {..}) (Ops {..}) cat =
                , not (x `isFreeIn` u)
                , okType (exprType v)
                -> case mkCompose' cat (mkCcc u) (mkCcc (Lam x v)) of
-                    Nothing -> 
+                    Nothing ->
                       Doing("lam App compose bail")
                       Nothing
-                    Just e' -> 
+                    Just e' ->
                       Doing("lam App compose")
                       return e'
 
@@ -744,7 +749,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
 
      Trying("lam App")
      -- (\ x -> U V) --> apply . (\ x -> U) &&& (\ x -> V)
-     u `App` v --  | pprTrace "lam App" (ppr (u,v)) False -> undefined
+     u `App` v --  \| pprTrace "lam App" (ppr (u,v)) False -> undefined
                | catClosed, liftedExpr v, okType (exprType v)
                -- , pprTrace "lam App mkApplyMaybe -->" (ppr (mkApplyMaybe cat vty bty, cat)) True
                , mbComp <- do app  <- mkApplyMaybe cat vty bty
@@ -777,6 +782,7 @@ ccc (CccEnv {..}) (Ops {..}) cat =
       bty = exprType body
       isConst = not (x `isFreeIn` body)
       catClosed = isClosed cat
+      subst1 vars v e = subst vars [(v,e)]
 
    -- Given
    --
@@ -926,7 +932,7 @@ composeR (CccEnv {..}) (Ops {..}) _g@(Coerce k _b c) _f@(Coerce _k a _b')
     Just (mkCoerceC k a c)
 
 -- composeR (CccEnv {..}) (Ops {..}) h (Compose _k _ _a _b' g f)
---   | pprTrace "composeR try re-assoc" (ppr h $$ ppr g $$ ppr f) False = undefined
+--   \| pprTrace "composeR try re-assoc" (ppr h $$ ppr g $$ ppr f) False = undefined
 
 composeR (CccEnv {..}) (Ops {..}) _h@(Coerce k _b c) (Compose _k _ a _b' _g@(Coerce _k' _z _a') f)
   = -- pprTrace "composeR coerce re-assoc" (ppr _h $$ ppr _g $$ ppr f) $
@@ -1005,6 +1011,7 @@ data Ops = Ops
  , normType       :: Role -> Type -> (Coercion, Type)
  , okType         :: Type -> Bool
  , optimizeCoercion :: Coercion -> Coercion
+ , subst          :: [Var] -> [(Id,CoreExpr)] -> Unop CoreExpr
  }
 
 mkOps :: CccEnv -> ModGuts -> AnnEnv -> FamInstEnvs
@@ -1075,16 +1082,16 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
    -- unfoldMaybe' e | pprTrace "unfoldMaybe'" (ppr (e,exprHead e)) False = undefined
    unfoldMaybe' e@(exprHead -> Just v)
      | not (isSelectorId v || isAbstReprId v) = unfoldMaybe e
-   unfoldMaybe' _ = Nothing                                    
+   unfoldMaybe' _ = Nothing
    unfoldMaybe :: ReExpr
    -- unfoldMaybe e | dtrace "unfoldMaybe" (ppr (e,collectArgsPred isTyCoDictArg e)) False = undefined
-   unfoldMaybe e -- | unfoldOkay e
-                 --  | (Var v, _) <- collectArgsPred isTyCoDictArg e
+   unfoldMaybe e -- \| unfoldOkay e
+                 --  \| (Var v, _) <- collectArgsPred isTyCoDictArg e
                  -- -- , dtrace "unfoldMaybe" (text (fqVarName v)) True
                  -- , isNothing (catFun (Var v))
-                 --  | True  -- experiment: don't restrict unfolding
+                 --  \| True  -- experiment: don't restrict unfolding
                  = onExprHead dflags ({- traceRewrite "inlineMaybe" -} inlineMaybe) e
-                 -- | otherwise = Nothing
+                 -- \| otherwise = Nothing
    -- unfoldMaybe = -- traceRewrite "unfoldMaybe" $
    --               onExprHead ({-traceRewrite "inlineMaybe"-} inlineMaybe)
    inlineMaybe :: Id -> Maybe CoreExpr
@@ -1107,7 +1114,7 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
    onDictMaybe :: ReExpr
    -- TODO: refactor onDictMaybe
    onDictMaybe e = case onDictTry e of
-                     Left  msg  -> dtrace "Couldn't build dictionary for" 
+                     Left  msg  -> dtrace "Couldn't build dictionary for"
                                      (pprWithType e GHC.<> colon $$ msg) $
                                    Nothing
                      Right dict -> Just dict
@@ -1125,7 +1132,7 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
                        buildDictionary hsc_env dflags guts uniqSupply inScope evTy ev ty
    catOp :: Cat -> Var -> [Type] -> CoreExpr
    -- catOp k op tys | dtrace "catOp" (ppr (k,op,tys)) False = undefined
-   catOp k op tys --  | dtrace "catOp" (pprWithType (Var op `mkTyApps` (k : tys))) True
+   catOp k op tys --  \| dtrace "catOp" (pprWithType (Var op `mkTyApps` (k : tys))) True
                   = onDicts (Var op `mkTyApps` (k : tys))
    -- TODO: refactor catOp and catOpMaybe when the dust settles
    -- catOp :: Cat -> Var -> CoreExpr
@@ -1212,7 +1219,12 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
    isClosed :: Cat -> Bool
    -- isClosed k = isJust (mkApplyMaybe k unitTy unitTy)
    isClosed k = isRight (buildDictMaybe (TyConApp closedTc [k]))
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,0,0)
+   normType role ty = let reduction = normaliseType famEnvs role ty
+                      in (reductionCoercion reduction, reductionReducedType reduction)
+#else
    normType = normaliseType famEnvs
+#endif
 
    mkCurry' :: Cat -> ReExpr
    -- mkCurry' k e | dtrace "mkCurry'" (ppr k <+> pprWithType e) False = undefined
@@ -1253,7 +1265,7 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
      mkCompose cat (catOp k ifV [ty])
        (mkFork cat cond (mkFork cat true false))
    mkBottomC :: Cat -> Type -> Type -> Maybe CoreExpr
-   mkBottomC k dom cod = 
+   mkBottomC k dom cod =
      -- dtrace "mkBottomC bottomTV" (pprWithType (Var bottomTV)) $
      onDicts <$> catOpMaybe k bottomTV [dom,cod]
    mkConst :: Cat -> Type -> ReExpr
@@ -1371,7 +1383,7 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
      | isFunCat cat = Just orig
      -- Take care with const, so we don't transform it alone.
      -- TODO: look for a more general suitable test for wrong number of arguments.
-     -- | pprTrace "transCatOp" (ppr (WithType (Var v),WithType <$> rest,length rest, orig)) False = undefined
+     -- \| pprTrace "transCatOp" (ppr (WithType (Var v),WithType <$> rest,length rest, orig)) False = undefined
      | v == constV && length rest /= 5 = Nothing
      | varModuleName v == Just catModule
      , uqVarName v `elem`
@@ -1440,13 +1452,26 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
       pseudoAnns = findAnns deserializeWithData annotations . NamedTarget . varName
 #if MIN_VERSION_GLASGOW_HASKELL(9,2,0,0)
    optimizeCoercion = optCoercion (initOptCoercionOpts dflags) emptyTCvSubst
-#else  
+#else
    optimizeCoercion = optCoercion dflags emptyTCvSubst
-#endif                      
+#endif
+    -- | Substitute new subexpressions for variables in an expression. Drop any dead
+    -- binders, which is handy as dead binders can appear with live binders of the
+    -- same variable.
+   subst :: [Var] -> [(Id,CoreExpr)] -> Unop CoreExpr
+#if MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
+   -- substExpr / lookupIdSubst expects Vars to be in inScope, so pass it along
+   subst vars ps = substExpr (foldr add (extendInScopeList (mkEmptySubst (fst inScope)) vars) ps')
+#else
+   subst vars ps = substExpr "subst" (foldr add emptySubst ps')
+#endif
+    where
+      add (v,new) sub = extendIdSubst sub v new
+      ps' = filter (not . isDeadBinder . fst) ps
 
 substFriendly :: Bool -> CoreExpr -> Bool
 -- substFriendly catClosed rhs
- --  | pprTrace "substFriendly"
+ --  \| pprTrace "substFriendly"
  --    (ppr ((catClosed,rhs),not (liftedExpr rhs),incompleteCatOp rhs,isTrivial rhs,isFunTy ty && not catClosed,isIntegerTy ty))
  --    False = undefined
  -- where
@@ -1532,7 +1557,7 @@ extModule =  "GHC.Exts"
 isTrivialCatOp :: CoreExpr -> Bool
 -- isTrivialCatOp = liftA2 (||) isSelection isAbstRepr
 isTrivialCatOp (collectArgs -> (Var v,length -> n))
-  --  | pprTrace "isTrivialCatOp" (ppr (v,n,isSelectorId v,isAbstReprId v)) True
+  --  \| pprTrace "isTrivialCatOp" (ppr (v,n,isSelectorId v,isAbstReprId v)) True
   =    (isSelectorId v && n == 5)  -- exl cat tya tyb dict ok
     || (isAbstReprId v && n == 4)  -- reprCf cat a r repCat
 isTrivialCatOp _ = False
@@ -1642,7 +1667,7 @@ install opts todos =
               delCccRule guts = return (on_mg_rules (filter (not . isCccRule)) guts)
               isCccRule r = isBuiltinRule r && ru_name r `elem` [cccRuleName,composeRuleName]
               -- isCCC r | is = pprTrace "delRule" (ppr cccRuleName) is
-              --         | otherwise = is
+              --         \| otherwise = is
               --  where
               --    is = isBuiltinRule r && ru_name r == cccRuleName
               (pre,post) = -- (todos,[])
@@ -1698,7 +1723,7 @@ install opts todos =
                     , sm_cast_swizzle = True
                     , sm_pre_inline = gopt Opt_SimplPreInlining dflags
                     , sm_logger     = hsc_logger hsc_env
-#endif                    
+#endif
                     }
 
 mkCccEnv :: [CommandLineOption] -> CoreM CccEnv
@@ -1831,8 +1856,8 @@ monoInfo =
    info :: [(String, [(String, [Type])])]
    info =
      [ ("notC",boolOp "not"), ("andC",boolOp "&&"), ("orC",boolOp "||")
-     , ("equal", eqOp "==" <$> ifd) 
-     , ("notEqual", eqOp "/=" <$> ifd) 
+     , ("equal", eqOp "==" <$> ifd)
+     , ("notEqual", eqOp "/=" <$> ifd)
      , ("lessThan", compOps "lt" "<")
      , ("greaterThan", compOps "gt" ">")
      , ("lessThanOrEqual", compOps "le" "<=")
@@ -1939,22 +1964,6 @@ uniqVarName v = uqVarName v ++ "_" ++ show (varUnique v)
 qualifiedName :: Name -> String
 qualifiedName nm =
   maybe "" (++ ".") (nameModuleName_maybe nm) ++ getOccString nm
-
--- | Substitute new subexpressions for variables in an expression. Drop any dead
--- binders, which is handy as dead binders can appear with live binders of the
--- same variable.
-subst :: [(Id,CoreExpr)] -> Unop CoreExpr
-#if MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
-subst ps = substExpr (foldr add emptySubst ps')
-#else
-subst ps = substExpr "subst" (foldr add emptySubst ps')
-#endif
- where
-   add (v,new) sub = extendIdSubst sub v new
-   ps' = filter (not . isDeadBinder . fst) ps
-
-subst1 :: Id -> CoreExpr -> Unop CoreExpr
-subst1 v e = subst [(v,e)]
 
 onHead :: Unop a -> Unop [a]
 onHead f (c:cs) = f c : cs
@@ -2183,7 +2192,7 @@ idOccs penalizeUnderLambda x = go
    go (Type _)                 = 0
    go (Coercion _)             = 0
    go _e@(exprType -> isPredTy' -> True)
-     -- | pprTrace "idOccs predicate" (pprWithType _e) False = undefined
+     -- \| pprTrace "idOccs predicate" (pprWithType _e) False = undefined
      = 0
    go (Lit _)                  = 0
    go (Var y)      | y == x    = -- pprTrace "idOccs found" (ppr y) $
@@ -2290,7 +2299,7 @@ unsafeLimit (Just r) = \ a -> unsafePerformIO $
 -- experiment
 alwaysSubst :: CoreExpr -> Bool
 -- alwaysSubst e@(collectArgs -> (Var _, args))
---   | pprTrace "alwaysSubst" (ppr (e,not (isTyCoDictArg e), all isTyCoDictArg args)) False = undefined
+--   \| pprTrace "alwaysSubst" (ppr (e,not (isTyCoDictArg e), all isTyCoDictArg args)) False = undefined
 alwaysSubst e@(collectArgs -> (Var _, args)) =
   not (isTyCoDictArg e) && all isTyCoDictArg args
 alwaysSubst _ = False
@@ -2301,6 +2310,9 @@ mkCoercible k a b co =
 
 isFunCat :: Type -> Bool
 isFunCat (TyConApp tc _) = isFunTyCon tc
+#if MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
+  || tc == unrestrictedFunTyCon -- ghc 9 has two representations for ->
+#endif
 isFunCat _               = False
 
 -- If the wild variable in a Case is not dead, make a new dead wild var and
@@ -2308,8 +2320,8 @@ isFunCat _               = False
 deadifyCaseWild :: ReExpr
 deadifyCaseWild e@(Case scrut wild _rhsTy [Alt (DataAlt dc) [a,b] rhs])
   | not (isDeadBinder wild) =
-  Just (Let (NonRec wild scrut) 
+  Just (Let (NonRec wild scrut)
          (Case (Var wild) wild' _rhsTy [Alt (DataAlt dc) [a,b] rhs]))
- where 
+ where
    wild' = freshDeadId (exprFreeVars e) "newWild" (varType wild)
 deadifyCaseWild _ = Nothing
