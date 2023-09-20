@@ -53,6 +53,13 @@ import GHC.Tc.Utils.Monad (getCtLocM,traceTc)
 import GHC.Tc.Utils.Zonk (emptyZonkEnv,zonkEvBinds)
 import GHC.Types.Unique (mkUniqueGrimily)
 import qualified GHC.Types.Unique.Set as NonDetSet
+import GHC.Core.FVs (exprFreeVars)
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,0,0)
+import GHC.Runtime.Eval.Types (IcGlobalRdrEnv(..))
+import GHC.Driver.Config.Finder (initFinderOpts)
+import GHC.Core.InstEnv (mkInstEnv)
+import GHC.Data.Maybe (expectJust)
+#endif
 #if MIN_VERSION_GLASGOW_HASKELL(9,2,0,0)
 import GHC.Runtime.Context (InteractiveContext (..), InteractiveImport (..))
 import GHC.Types.Error (getErrorMessages, getWarningMessages)
@@ -95,6 +102,10 @@ import qualified UniqSet as NonDetSet
 
 import ConCat.Simplify
 
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,0,0)
+import GHC.Utils.Trace
+#endif
+
 isEvVarType' :: Type -> Bool
 isEvVarType' = isEvVarType
 
@@ -102,8 +113,13 @@ isFound :: FindResult -> Bool
 isFound (Found _ _) = True
 isFound _           = False
 
-moduleIsOkay :: HscEnv -> ModuleName -> IO Bool
-moduleIsOkay env mname = isFound <$> findExposedPackageModule env mname Nothing
+moduleIsOkay :: HscEnv -> DynFlags -> ModuleName -> IO Bool
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,0,0)
+moduleIsOkay env dflags mname =
+  isFound <$> findExposedPackageModule (hsc_FC env) (initFinderOpts dflags) (hsc_units env) mname NoPkgQual
+#else
+moduleIsOkay env _dflags mname = isFound <$> findExposedPackageModule env mname Nothing
+#endif
 
 mkLocalId' :: HasDebugCallStack => Name -> Type -> Id
 #if MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
@@ -139,7 +155,7 @@ traceTc' str doc = pprTrace' str doc (return ())
 runTcM :: HscEnv -> DynFlags -> ModGuts -> TcM a -> IO a
 runTcM env0 dflags guts m = do
     -- Remove hidden modules from dep_orphans
-    orphans <- filterM (moduleIsOkay env0) (moduleName <$> dep_orphs (mg_deps guts))
+    orphans <- filterM (moduleIsOkay env0 dflags) (moduleName <$> dep_orphs (mg_deps guts))
     -- pprTrace' "runTcM orphans" (ppr orphans) (return ())
     (msgs, mr) <- runTcInteractive (env orphans) m
 #if MIN_VERSION_GLASGOW_HASKELL(9,2,0,0)
@@ -167,8 +183,13 @@ runTcM env0 dflags guts m = do
      -- pprTrace' "runTcM ic_rn_gbl_env" (ppr (ic_rn_gbl_env (hsc_IC env0))) $
      env0 { hsc_IC = (hsc_IC env0)
              { ic_imports = map IIModule extraModuleNames ++ imports0
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,0,0)
+             , ic_gre_cache = IcGlobalRdrEnv { igre_env = mg_rdr_env guts, igre_prompt_env = emptyGlobalRdrEnv }
+             , ic_instances = (mkInstEnv (mg_insts guts), mg_fam_insts guts)
+#else
              , ic_rn_gbl_env = mg_rdr_env guts
              , ic_instances = (mg_insts guts, mg_fam_insts guts)
+#endif
              } }
      -- env0
 
@@ -176,7 +197,23 @@ runTcM env0 dflags guts m = do
 -- If successful, drop dflags and guts arguments.
 
 runDsM :: HscEnv -> DynFlags -> ModGuts -> DsM a -> IO a
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,0,0)
+runDsM env dflags guts dsm = runTcM env dflags guts $ do
+  (_tc_msgs, mb_result) <- initDsTc dsm
+  return (expectJust "initDsTc" mb_result)
+#else
 runDsM env dflags guts = runTcM env dflags guts . initDsTc
+#endif
+
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,0,0)
+unkskol :: SkolemInfoAnon
+unkskol = unkSkolAnon
+#else
+unkskol :: SkolemInfo
+unkskol = UnkSkol
+#endif
+
+
 
 -- | Build a dictionary for the given id
 buildDictionary' :: HscEnv -> DynFlags -> ModGuts -> VarSet -> Type
@@ -184,8 +221,8 @@ buildDictionary' :: HscEnv -> DynFlags -> ModGuts -> VarSet -> Type
 buildDictionary' env dflags guts evIds predTy =
   do res <-
        runTcM env dflags guts $
-       do loc <- getCtLocM (GivenOrigin UnkSkol) Nothing
-          evidence <- TcMType.newWanted (GivenOrigin UnkSkol) Nothing predTy
+       do loc <- getCtLocM (GivenOrigin unkskol) Nothing
+          evidence <- TcMType.newWanted (GivenOrigin unkskol) Nothing predTy
           let EvVarDest evarDest = ctev_dest evidence
               givens = mkGivens loc (uniqSetToList evIds)
               wCs = mkSimpleWC [evidence]
@@ -228,7 +265,7 @@ buildDictionary env dflags guts uniqSupply inScope evType ev goalTy | isEvVarTyp
 buildDictionary _env _dflags _guts _uniqSupply _inScope evT _ev _goalTy = pprPanic "evidence type mismatch" (ppr evT)
                                                          
 reallyBuildDictionary :: HscEnv -> DynFlags -> ModGuts -> UniqSupply -> InScopeEnv -> Type -> [Type] -> CoreExpr -> Type -> IO (Either SDoc CoreExpr)
-reallyBuildDictionary env dflags guts uniqSupply _inScope evType evTypes ev goalTy =
+reallyBuildDictionary env dflags guts uniqSupply inScope evType evTypes ev goalTy =
   pprTrace' "\nbuildDictionary" (ppr goalTy) $
   pprTrace' "buildDictionary in-scope evidence" (ppr ev) $
   reassemble <$> buildDictionary' env dflags guts evIdSet goalTy
@@ -247,7 +284,7 @@ reallyBuildDictionary env dflags guts uniqSupply _inScope evType evTypes ev goal
      res
     where
       res | null bnds          = Left (text "no bindings")
-          | otherwise          = return $ simplifyE dflags False
+          | otherwise          = return $ simplifyE env dflags (fst inScope) False
                                           expr
       dict =
         case bnds of
