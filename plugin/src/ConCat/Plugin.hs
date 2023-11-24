@@ -1455,6 +1455,9 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
 #else
    optimizeCoercion = optCoercion dflags emptyTCvSubst
 #endif
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,8,0)
+   extendInScopeList = extendSubstInScopeList
+#endif
     -- | Substitute new subexpressions for variables in an expression. Drop any dead
     -- binders, which is handy as dead binders can appear with live binders of the
     -- same variable.
