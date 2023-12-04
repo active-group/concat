@@ -112,6 +112,8 @@ import GHC.Classes
 
 import ConCat.Misc (Unop,Binop,Ternop,PseudoFun(..),(~>))
 import ConCat.BuildDictionary
+import ConCat.NormaliseType (eqTypeM)
+
 -- import ConCat.Simplify
 
 pattern FunCo' :: Role -> Coercion -> Coercion -> Coercion
@@ -1012,6 +1014,7 @@ data Ops = Ops
  , okType         :: Type -> Bool
  , optimizeCoercion :: Coercion -> Coercion
  , subst          :: [Var] -> [(Id,CoreExpr)] -> Unop CoreExpr
+ , eqTypeNormalising :: Type -> Type -> Bool
  }
 
 mkOps :: CccEnv -> ModGuts -> AnnEnv -> FamInstEnvs
@@ -1367,7 +1370,7 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
                              (doc $$ ppr before' $$ "-->" $$ ppr after)
             beforeTy = exprType before'
             afterTy  = exprType after
-        maybe (if beforeTy `eqType` afterTy then
+        maybe (if beforeTy `eqTypeNormalising` afterTy then
                  return after
                else
                  oops "type change"
@@ -1455,6 +1458,9 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
 #else
    optimizeCoercion = optCoercion dflags emptyTCvSubst
 #endif
+#if MIN_VERSION_GLASGOW_HASKELL(9,4,8,0)
+   extendInScopeList = extendSubstInScopeList
+#endif
     -- | Substitute new subexpressions for variables in an expression. Drop any dead
     -- binders, which is handy as dead binders can appear with live binders of the
     -- same variable.
@@ -1468,6 +1474,9 @@ mkOps (CccEnv {..}) guts annotations famEnvs dflags inScope evTy ev cat = Ops {.
     where
       add (v,new) sub = extendIdSubst sub v new
       ps' = filter (not . isDeadBinder . fst) ps
+   eqTypeNormalising :: Type -> Type -> Bool
+   eqTypeNormalising ty1 ty2 =
+     unsafePerformIO (eqTypeM hsc_env dflags guts ty1 ty2)
 
 substFriendly :: Bool -> CoreExpr -> Bool
 -- substFriendly catClosed rhs
