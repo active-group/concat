@@ -25,7 +25,7 @@ runSynCirc nm (syn A.:**: circ) =
     ]
  where
    gold str = goldenVsString "syntax"
-                     ("test/gold/" <> show (__GLASGOW_HASKELL__ :: Int) <> "/" <> nm <> "-" <> str <> ".golden")
+                     ("test/gold/" <> __GLASGOW_HASKELL_FULL_VERSION__ <> "/" <> nm <> "-" <> str <> ".golden")
             . pure . BS.pack
 
 runDers :: (Show a, Show b, Show s) => String
@@ -36,7 +36,7 @@ runDers :: (Show a, Show b, Show s) => String
   -> TestTree
 runDers nm derf derr gradr a a' b =
  let gold str = goldenVsString str
-                ("test/gold/" <> show (__GLASGOW_HASKELL__ :: Int) <> "/" <> nm <> "-" <> str <> ".golden")
+                ("test/gold/" <> __GLASGOW_HASKELL_FULL_VERSION__ <> "/" <> nm <> "-" <> str <> ".golden")
                   . pure . BS.pack
      (b', d) = derf a
      (b'', rd) = derr a
