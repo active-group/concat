@@ -351,9 +351,9 @@
     "root": {
       "inputs": {
         "bash-strict-mode": "bash-strict-mode",
-        "flake-utils": "flake-utils_5",
+        "flake-utils": "flake-utils_2",
         "home-manager": "home-manager_2",
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": "nixpkgs"
       }
     },
     "rust-analyzer-src": {
