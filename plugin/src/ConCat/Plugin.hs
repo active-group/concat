@@ -177,6 +177,8 @@ data CccEnv = CccEnv { dtrace           :: forall a. String -> SDoc -> a -> a
                      , coerceV          :: Id
                      , linearMatV       :: Id
                      , outerVecV        :: Id
+                     , matMulLV         :: Id
+                     , matMulRV         :: Id
                      , barbarbarbarV    :: Id
                      , astastastV       :: Id
                      , sumACV           :: Id
@@ -683,7 +685,23 @@ ccc (CccEnv {..}) (Ops {..}) cat =
      e@(collectArgs -> (Var v, Type (isFunCat -> False) : _))
         | v == outerVecV
         , Just body' <- unfoldMaybe e
-        -> Doing("lam linearMatC unfold")
+        -> Doing("lam outerVecC unfold")
+           -- dtrace "lam fmap unfold" (ppr body') $
+           return (mkCcc (Lam x body'))
+
+     Trying("matMulLC unfold")
+     e@(collectArgs -> (Var v, Type (isFunCat -> False) : _))
+        | v == matMulLV
+        , Just body' <- unfoldMaybe e
+        -> Doing("lam matMulLC unfold")
+           -- dtrace "lam fmap unfold" (ppr body') $
+           return (mkCcc (Lam x body'))
+
+     Trying("matMulRC unfold")
+     e@(collectArgs -> (Var v, Type (isFunCat -> False) : _))
+        | v == matMulRV
+        , Just body' <- unfoldMaybe e
+        -> Doing("lam matMulRC unfold")
            -- dtrace "lam fmap unfold" (ppr body') $
            return (mkCcc (Lam x body'))
 
@@ -1799,6 +1817,8 @@ mkCccEnv opts = do
   coerceV       <- findCatId "coerceC"
   linearMatV    <- findCatId "linearMatC"
   outerVecV     <- findCatId "outerVecC"
+  matMulLV      <- findCatId "matMulLC"
+  matMulRV      <- findCatId "matMulRC"
   barbarbarbarV <- findCatId "||||"
   astastastV    <- findCatId "***"
   sumACV        <- findCatId "sumAC"
