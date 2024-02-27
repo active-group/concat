@@ -346,9 +346,29 @@ instance
   , Additive1 (Matrix.MatrixF f2 f3)
   , Additive1 (Matrix.MatrixF f1 f3)
   ) => MatMulCat (-+>) f1 f2 f3 where
-    matMulLC mR = abst (matMulLC mR)
-    matMulRC mL = abst (matMulRC mL)
-    matMulBothC = abst matMulBothC
+    matMulLC ::
+      forall s.
+      ( Ok (-+>) s
+      ) =>
+      Matrix.MatrixF f2 f3 s ->
+      Matrix.MatrixF f1 f2 s -+> Matrix.MatrixF f1 f3 s
+    matMulLC mR = -- abst (matMulLC mR)
+      matMulBothC . (id &&& (const mR))
+      <+ okFunctor @(-+>) @(Matrix.MatrixF f1 f2) @s
+      <+ okFunctor @(-+>) @(Matrix.MatrixF f1 f3) @s
+      <+ okFunctor @(-+>) @(Matrix.MatrixF f2 f3) @s
+    matMulRC ::
+      forall s.
+      ( Ok (-+>) s
+      ) =>
+      Matrix.MatrixF f1 f2 s ->
+      Matrix.MatrixF f2 f3 s -+> Matrix.MatrixF f1 f3 s
+    matMulRC mL = -- abst (matMulRC mL)
+      matMulBothC . ((const mL) &&& id)
+      <+ okFunctor @(-+>) @(Matrix.MatrixF f2 f3) @s
+      <+ okFunctor @(-+>) @(Matrix.MatrixF f1 f2) @s
+      <+ okFunctor @(-+>) @(Matrix.MatrixF f1 f3) @s
+    matMulBothC = abst Matrix.matMulBoth
     {-# OPINLINE matMulLC #-}
     {-# OPINLINE matMulRC #-}
     {-# OPINLINE matMulBothC #-}
