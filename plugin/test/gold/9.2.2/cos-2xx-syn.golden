@@ -1,1 +1,0 @@
-cosC . mulC . (mulC . (const 2.0 *** id) . dup *** id) . dup
