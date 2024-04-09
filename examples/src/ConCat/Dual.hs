@@ -369,3 +369,19 @@ instance (PadCat k a b) => PadCat (Dual k) a b where
   unpadC = Dual padC
   {-# INLINE padC#-}
   {-# INLINE unpadC#-}
+
+instance
+  ( Additive1 g
+  , Additive1 h
+  , ReduceMinMaxCat (->) g h a
+  , InnerSumCat k g h
+  , OkFunctor k h
+  , OkFunctor k g
+  , Ok k a
+  , Additive a
+  , Matrix.InnerSum g h
+  ) => ReduceMinMaxFCat (Dual k) g h a where
+  reduceMaxCF x = (reduceMaxC x, abst innerPointC)
+  reduceMinCF x = (reduceMinC x, abst innerPointC)
+  {-# INLINE reduceMaxCF #-}
+  {-# INLINE reduceMinCF #-}

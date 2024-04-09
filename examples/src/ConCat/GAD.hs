@@ -505,3 +505,9 @@ instance (PadCat k a b) => PadCat (GD k) a b where
   unpadC = linearD unpadC unpadC
   {-# INLINE padC #-}
   {-# INLINE unpadC #-}
+
+instance (ProductCat k, ReduceMinMaxFCat k g h a, Ord a) => ReduceMinMaxCat (GD k) g h a where
+  reduceMaxC = abst reduceMaxCF
+  reduceMinC = abst reduceMinCF
+  {-# INLINE reduceMaxC #-}
+  {-# INLINE reduceMinC #-}

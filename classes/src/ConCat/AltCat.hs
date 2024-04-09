@@ -113,6 +113,7 @@ import ConCat.Category
   , OkFunctor(..),FunctorCat,Strong,ZipCat,ZapCat,PointedCat{-,SumCat-},AddCat
   , TraversableCat,DistributiveCat,RepresentableCat
   , MinMaxFunctorCat, MinMaxFFunctorCat
+  , ReduceMinMaxCat, ReduceMinMaxFCat
   , FiniteCat
   , fmap', liftA2' 
   -- 
@@ -901,6 +902,10 @@ Op0(minimumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(maximumC, (MinMaxFunctorCat k h a, OkFunctor k h, Ok k a) => h a `k` a)
 Op0(minimumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
 Op0(maximumCF, (MinMaxFFunctorCat k h a, OkFunctor k h, Ok k a) => h a -> (a :*  (h a `k` a)))
+Op0(reduceMaxC, (ReduceMinMaxCat k g h a, OkFunctor k g, OkFunctor k h, Ok k a) => g a `k` h a)
+Op0(reduceMinC, (ReduceMinMaxCat k g h a, OkFunctor k g, OkFunctor k h, Ok k a) => g a `k` h a)
+Op0(reduceMaxCF, (ReduceMinMaxFCat k g h a, OkFunctor k g, OkFunctor k h, Ok k a) => g a -> (h a :* (g a `k` h a)))
+Op0(reduceMinCF, (ReduceMinMaxFCat k g h a, OkFunctor k g, OkFunctor k h, Ok k a) => g a -> (h a :* (g a `k` h a)))
 Op1(backpermuteC, (Ok k s, Matrix.Backpermute a b s, BackpermuteCat k a b s) => Permutation a b s -> a s `k` b s)
 Op1(frontpermuteC, (Ok k s, Matrix.Frontpermute a b s, FrontpermuteCat k a b s) => FPermutation a b s -> a s `k` b s)
 Op0(padC, (Ok k s, Matrix.Pad a b, Matrix.PadConstraint a b s, PadCat k a b) => a s `k` b s)
@@ -969,6 +974,9 @@ Catify(ConCatZip.zip, curry zipC)
 
 Catify(ConCatMinMax.minimum, minimumC)
 Catify(ConCatMinMax.maximum, maximumC)
+
+Catify(ConCatMinMax.reduceMin, reduceMinC)
+Catify(ConCatMinMax.reduceMax, reduceMaxC)
 
 #if 0
 unzipC :: forall k h a b. (FunctorCat k h, TerminalCat k, ClosedCat k, Ok2 k a b)

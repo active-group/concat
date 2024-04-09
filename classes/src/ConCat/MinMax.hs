@@ -9,7 +9,7 @@
 -- use with
 -- import Prelude hiding (minimum, maximum)
 
-module ConCat.MinMax(MinMax(..), MinMaxRep(..)) where
+module ConCat.MinMax(MinMax(..), MinMaxRep(..), ReduceMinMax(..)) where
 
 import Prelude hiding (minimum, maximum)
 import GHC.TypeLits
@@ -38,3 +38,6 @@ instance (Ord a, KnownNat n, n ~ (m + 1)) => MinMaxRep (Vector DataVector.Vector
     let i = Vector.maxIndex v
     in (i, Vector.index v i)
 
+class Ord a => ReduceMinMax f g a where
+  reduceMin :: f a -> g a
+  reduceMax :: f a -> g a

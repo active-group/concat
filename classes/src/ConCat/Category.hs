@@ -2857,3 +2857,17 @@ instance Matrix.Pad a b => PadCat (->) a b where
   unpadC = IC.inline Matrix.unpad
   {-# OPINILNE padC #-}
   {-# OPINILNE unpadC #-}
+
+class (OkFunctor k g, OkFunctor k h, Ok k a) => ReduceMinMaxCat k g h a where
+  reduceMaxC :: g a `k` h a
+  reduceMinC :: g a `k` h a
+
+instance (ReduceMinMax g h a) => ReduceMinMaxCat (->) g h a where
+  reduceMaxC = IC.inline reduceMax
+  reduceMinC = IC.inline reduceMin
+  {-# OPINLINE reduceMaxC #-}
+  {-# OPINLINE reduceMinC #-}
+
+class (OkFunctor k g, OkFunctor k h, Ok k a) => ReduceMinMaxFCat k g h a where
+  reduceMaxCF :: g a -> (h a :* (g a `k` h a))
+  reduceMinCF :: g a -> (h a :* (g a `k` h a))
